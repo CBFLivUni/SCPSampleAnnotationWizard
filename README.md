@@ -4,7 +4,9 @@
 - Written in Electron JS + React
 
 `pip install pyinstaller`
+
 `pyinstaller -F processingpy/processing.py`
+
 `mv processingpy/processing.exe processing`
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
