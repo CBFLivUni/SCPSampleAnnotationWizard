@@ -66,9 +66,6 @@ function OtherPage() {
     // process any edits to cell population names
     // value passed in is HTML collection of text inputs where value is current value and name is default value
 
-    // get current name values, so can ensure they are replaced correctly
-    //let cellPathArray = formSettings.form['cell-files-path']
-
     // parse names of cell files from array
 	  let newCellPopulationsArr = []
     for(var i=0;i < nameCellPopulations.length; i++){
@@ -79,8 +76,6 @@ function OtherPage() {
     // call handle change
     let event = {target:{value: newCellPopulationsArr, name:'cell-population-names'}};
     handleChangePF(event, store, storagePath)
-
-
   }
 
   function processExtraRows(extraRows, store, storagePath) {

@@ -114,6 +114,7 @@ function ensureValueSet(store, desiredVals, path, tagName, n) {
 }
 
 function processPrivateStore(event, store, path) {  // store
+  // THIS IS NOT USED
   // when handle change for a component, also add the desire p tag to the private store
   // assumes that the id for the p tag associated with the component name is 'event.name'+'-tag'
   
@@ -127,22 +128,8 @@ function processPrivateStore(event, store, path) {  // store
 
   // set the target name of form as the key, and add path as the tag
   updatedPrivateSettings["test"] = "test";  //path
-
-  // sometimes just isn't set in store and don't know why. Set, check if set, loop over until set. This isn't a good fix.
-  // write too quickly and file locks. so loop over until set.
-  // .lock file  being created and deleted very quickly seems to cause error
   store.set('privateSettings', updatedPrivateSettings);
 
-  console.log("SET")
-
-  console.log(store)
-  console.log(updatedPrivateSettings)
-  console.log(path)
-  console.log(tagName)
-  console.log(store.getSync('privateSettings'))
-
-  //ensureValueSet(store, updatedPrivateSettings, path, tagName, 50)
-  
 }
 
 

@@ -16,9 +16,6 @@ import { changePage } from './handlePageChange';
 
 const jsonfilePath = window.process.argv.slice(-5, -1)[1];
 const jsonfile = require(jsonfilePath);
-//const jsonfile = require(path.join(__dirname, '../app.asar/node_modules/jsonfile'));
-//const jsonfile = require('jsonfile');
-
 
 function ImportError() {
 
@@ -60,9 +57,6 @@ function ImportError() {
       errorText += arrayLog[i] + '\n'
     }
   }
-
-
-  //var enc = new TextDecoder("utf-8");
 
   return(
     <div className="App">

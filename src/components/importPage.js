@@ -68,7 +68,7 @@ function ImportPage() {
   const [sanText, setText] = React.useState(defTaskName);
 
   function sanitiseText(value) {
-    // sanitise task name
+    // sanitise task name so is safe as folder
 
     const regex = /^[a-z0-9]+$/i;
     console.log(regex.test(value))

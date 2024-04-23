@@ -138,15 +138,9 @@ function processLoadCellPopulationNames(formSettings, storagePath, store) {
 
 function getDataFromImports(storagePath, store) {
 	// call the python script to get data from imports and add to jsons.
-	// TODO this needs to be updated to find python path in production
-	//path.join(app.getAppPath(), '..', 'python_scripts/my_script.py'
 	//https://stackoverflow.com/questions/41199981/run-python-script-in-electron-app
-	//let python = spawn('python', [path.join(app.getAppPath(), '..', 'python_scripts/my_script.py'])
 
-	// for now get it to run from venv
 	// run in sync, only continue processing when exited
-
-	console.log(isDev);
 	
 	if (isDev === "true") {
 		let pythonProcess = spawnSync(path.join(__dirname, '..', '..', '..', '..', '..', '..', 'processing/processing.exe'), [storagePath, "processimport"]);

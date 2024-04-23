@@ -61,9 +61,6 @@ function OutputPage() {
     }
   }
 
-
-  //var enc = new TextDecoder("utf-8");
-
   return(
     <div className="App">
           <header className="App-header">

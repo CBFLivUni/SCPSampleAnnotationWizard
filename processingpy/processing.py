@@ -27,7 +27,7 @@ try:
 
 	# get user_data_path as arg
 	user_data_path = sys.argv[1]
-	#user_data_path = r"C:\Users\alexr\OneDrive\Documents\Work\CBF\Emmott_Annotation\Application\scpannotation\data.json"
+	#user_data_path = r"..\scpannotation\data.json"
 
 	# either 'processimport', 'full'
 	analysis = sys.argv[2]
@@ -53,40 +53,6 @@ try:
 
 	# set up logging asap
 	logging.basicConfig(filename=output_path + "\\scpannotationwizard.log", level=logging.INFO)
-
-	# testing paths.
-	"""
-	rawfile_p_f = 'csv'
-	cellfile_path = "C:\\Users\\alexr\\OneDrive\\Documents\\Work\\CBF\\Emmott_Annotation\\code\\test files\\"
-	rawfile_path = "C:\\Users\\alexr\\OneDrive\\Documents\\Work\\CBF\\Emmott_Annotation\\code\\test files"
-	rawfile_file = "C:\\Users\\alexr\\OneDrive\\Documents\\Work\\CBF\\Emmott_Annotation\\code\\test files\\File_names.csv"
-	labels_path = "C:\\Users\\alexr\\OneDrive\\Documents\\Work\\CBF\\Emmott_Annotation\\code\\test files\\Labels.fld"
-	pickup_path = "C:\\Users\\alexr\\OneDrive\Documents\\Work\\CBF\\Emmott_Annotation\\code\\test files\\Pickup.csv"  # note: this uses .csv not .fld
-	cell_files = ['A549.csv','HEK.csv']
-	cell_names = ['A549','HEK']
-	output_path = 'C:\\Users\\alexr\\OneDrive\\Documents\\Work\\CBF\\Emmott_Annotation\\code\\test files\\TEST_OUTPUT'
-	label_missing = "Control"
-	meta_to_include = [{'name': 'RawFileName', 'checked': True, 'disabled': True},
-	{'name': 'Channel', 'checked': True, 'disabled': True},
-	{'name': 'CellType', 'checked': True, 'disabled': True},
-	{'name': 'OtherOption1', 'checked': False, 'disabled': False},
-	{'name': 'OtherOption2', 'checked': False, 'disabled': False}]
-
-	column_mismatches = {'header1': {'isIn': 'cell_file1.csv',
-	'notIn': 'cell_file2.csv, cell_file3.csv',
-	'handle': 'remove',
-	'fillValue': ''},
-	'header2': {'isIn': 'cell_file1.csv, cell_file2.csv',
-	'notIn': 'cell_file3.csv',
-	'handle': 'remove',
-	'fillValue': ''},
-	'header4': {'isIn': 'cell_file2.csv, cell_file3.csv',
-	'notIn': 'cell_file1.csv',
-	'handle': 'remove',
-	'fillValue': ''}}
-
-	extra_rows = ["Carrier","Control","Reference", "Empty"]
-	"""
 
 	# if just for processing import data to populate metadata page
 	if analysis == 'processimport':
@@ -237,13 +203,6 @@ try:
 			new_row = str(int(row['RawFileName'].split("_R")[1].split("_")[0]))  # new row is just int
 			pickup_well.append(new_col + new_row)
 
-			# other way round
-			#new_col = str(int(row['RawFileName'].split("_C")[1].split("_")[0]))
-
-			#curr_row = int(row['RawFileName'].split("_R")[1].split("_")[0])  # new row is just int
-			#new_row = string.ascii_uppercase[curr_row-1]
-			#pickup_well.append(new_row + new_col)
-
 		raw_files_df['PickupWell'] = pickup_well
 
 		if labels_path.endswith('.fld'):
@@ -295,7 +254,6 @@ try:
 		else:
 			logging.error("Labels file must be .fld")
 			sys.exit("Labels file must be .fld")
-			
 
 		# pickup file processing
 		if pickup_path.endswith('.csv'):
@@ -369,9 +327,6 @@ try:
 
 		# loop over fields from merged_table
 		# get x and y positions from pickup
-
-		# check what matlab script doing, if can just loop over each ele over table, then do that as easier to understand.
-
 		pickup_x = []
 		pickup_y = []
 		pickup_plate = []
@@ -514,7 +469,6 @@ try:
 		final_df = pd.concat([merged_table_df, extra_rows_df])
 
 		# then final table cleanup
-		#final_df = final_df.rename(columns={'X': 'Cell_X', 'Y': 'Cell_Y'})
 		final_df = final_df.sort_values(by=['RawFileName', 'Channel'])
 
 		# only keep columns you need
@@ -523,9 +477,6 @@ try:
 		# if nan's deal with
 		final_df['RawFileName'] = final_df['RawFileName'].map(lambda x: str(x).split('.raw')[0])
 
-		#final_df.to_csv(r'C:\Users\alexr\OneDrive\Documents\Work\CBF\Emmott_Annotation\code\test files\test_py.csv')
-
-		# now only keep columns that the user has selected
 		# write table
 		try:
 			final_df.to_csv(output_path + "\\scp_sample_annotation_table.csv", index=False)
