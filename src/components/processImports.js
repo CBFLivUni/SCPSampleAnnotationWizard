@@ -2,9 +2,10 @@ import { handleChangePF } from './processForm';
 import path from 'path';
 import { changePage } from './handlePageChange';
 const { spawnSync } = require('node:child_process');
-const isDev = window.process.argv.slice(-4, -1)[2];
+const isDev = window.process.argv.slice(-5, -1)[2];
+var fs = require('fs');
 
-const jsonfilePath = window.process.argv.slice(-4, -1)[1];
+const jsonfilePath = window.process.argv.slice(-5, -1)[1];
 const jsonfile = require(jsonfilePath);
 //const jsonfile = require(path.join(__dirname, '../app.asar/node_modules/jsonfile'));
 //const jsonfile = require('jsonfile');
@@ -145,17 +146,18 @@ function getDataFromImports(storagePath, store) {
 	// for now get it to run from venv
 	// run in sync, only continue processing when exited
 
-	let pythonProcess;
 	console.log(isDev);
 	
 	if (isDev === "true") {
-		let pythonProcess = spawnSync('C:/Users/alexr/PycharmProjects/3_9/python/Scripts/python',["C:/Users/alexr/OneDrive/Documents/Work/CBF/Emmott_Annotation/code/processing.py", storagePath, "processimport"]);
-		console.log(pythonProcess.stdout)
+		let pythonProcess = spawnSync(path.join(__dirname, '..', '..', '..', '..', '..', '..', 'processing/processing.exe'), [storagePath, "processimport"]);
+		console.log(pythonProcess.stderr);
+		return pythonProcess.stderr;
 	} else {
 		console.log("processing.exe path is:")
 		console.log(path.join(__dirname, '..', 'processing/processing.exe'));
 		let pythonProcess = spawnSync(path.join(__dirname, '..', 'processing/processing.exe'), [storagePath, "processimport"]);
-		console.log(pythonProcess.stdout)
+		console.log(pythonProcess.stderr);
+		return pythonProcess.stderr
 	}
 }
 
@@ -165,20 +167,38 @@ export function handleProcessImports(storagePath, store) {
 	// set cursor to waiting
 	document.body.style.cursor  = 'wait';
 
+	// write path for output if it doesn't exist
+	let currSettings = jsonfile.readFileSync(storagePath)
+	let output_path = currSettings.form["output-path"]
+
+	if (!fs.existsSync(output_path)){
+        fs.mkdirSync(output_path, { recursive: true });
+	};
+
 	// run python script to update json
-	getDataFromImports(storagePath, store)
+	let stderr = getDataFromImports(storagePath, store)
+	console.log(stderr)
+	//if stderr exists. i.e. error with import, go straight to output page to view errors
+	if (stderr.length !== 0){
+		// set cursor to normal
+		document.body.style.cursor  = 'auto';
+		changePage('importerror');
+	} else {
+		//if no errors, then continue processing
+		let formSettings = jsonfile.readFileSync(storagePath)
 
-	let formSettings = jsonfile.readFileSync(storagePath)
+		processLoadCellPopulationNames(formSettings, storagePath, store)
 
-	processLoadCellPopulationNames(formSettings, storagePath, store)
+		processMetadataToInclude(formSettings, storagePath, store)
+		
+		processCellfileColumnsMismatches(formSettings, storagePath, store)
 
-	processMetadataToInclude(formSettings, storagePath, store)
+		// set cursor to normal
+		document.body.style.cursor  = 'auto';
+
+		// go to meta page only once processing done
+		changePage('meta');
+	}
+
 	
-	processCellfileColumnsMismatches(formSettings, storagePath, store)
-
-	// set cursor to normal
-	document.body.style.cursor  = 'auto';
-
-	// go to meta page only once processing done
-	changePage('meta');
 }

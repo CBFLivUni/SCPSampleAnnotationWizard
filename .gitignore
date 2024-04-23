@@ -12,6 +12,9 @@
 /build
 /out
 /processing/processing.exe
+processingpy/build
+processingpy/dist
+processingpy/processing.spec
 
 # misc
 .DS_Store

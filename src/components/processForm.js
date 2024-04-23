@@ -1,10 +1,11 @@
 import log from 'electron-log'
 log.initialize();
 var path = require('path');
-const jsonfilePath = window.process.argv.slice(-4, -1)[1];
+const jsonfilePath = window.process.argv.slice(-5, -1)[1];
 const jsonfile = require(jsonfilePath);
 //const jsonfile = require(path.join(__dirname, '../app.asar/node_modules/jsonfile'));
 //const jsonfile = require('jsonfile');
+const outputPath = window.process.argv.slice(-5, -1)[3];
 
 function processImportPaths(event, tag, storagePath) {
   // update text in p element with upload name and get real path
@@ -57,20 +58,20 @@ function checkImportPageComplete(settings, store, storagePath) {
     settings.form["label-file-path"] !== "undefined" &&
     settings.form["pickup-file-path"] !== "undefined" &&
     settings.form["cell-files-path"] !== "undefined" &&
-    settings.form["output-path"] !== "undefined"))
+    settings.form["name"] !== "undefined"))
 
   console.log(settings.form["raw-files-path"] !== "undefined")
   console.log(settings.form["label-file-path"] !== "undefined")
   console.log(settings.form["pickup-file-path"] !== "undefined")
   console.log(settings.form["cell-files-path"] !== "undefined")
-  console.log(settings.form["output-path"] !== "undefined")
+  console.log(settings.form["output-path"] !== "")
   console.log(settings)
 
   if ((settings.form["raw-files-path"] !== "undefined" &&
         settings.form["label-file-path"] !== "undefined" &&
         settings.form["pickup-file-path"] !== "undefined" &&
         settings.form["cell-files-path"] !== "undefined" &&
-        settings.form["output-path"] !== "undefined")) {
+        settings.private["name-job"] !== "undefined")) {
 
           // only if all values are set, enable button
           // enable button
@@ -112,7 +113,6 @@ function ensureValueSet(store, desiredVals, path, tagName, n) {
   }
 }
 
-
 function processPrivateStore(event, store, path) {  // store
   // when handle change for a component, also add the desire p tag to the private store
   // assumes that the id for the p tag associated with the component name is 'event.name'+'-tag'
@@ -147,7 +147,8 @@ function processPrivateStore(event, store, path) {  // store
 
 
 export const handleChangePF = (event, store, storagePath) => {
-    // handle form change input.  
+    // handle form change input. 
+    console.log(event)
 
     // for checking whether need to check if check import page needs to run
     let pageName = document.URL;
@@ -218,6 +219,16 @@ export const handleChangePF = (event, store, storagePath) => {
       p_tag.innerText = stringFiles
       privateVal = stringFiles;
       privateKey = pTag;
+
+    } else if (event.target.name === "name-job") {
+      // now that only name a job, add it to "my documents" path
+
+      formKey = "output-path";
+      formVal = path.join(outputPath, 'ScpSampleAnnotationWizardOutput', event.target.value)
+
+      // add name to private store.
+      privateKey = "name-job";
+      privateVal = event.target.value;
 
     } else if (event.target.name === "output-path") {
       let pTag = "output-path-tag";  // associated with import

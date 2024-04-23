@@ -1,5 +1,5 @@
-const jsonfilePath = window.process.argv.slice(-4, -1)[1];
-console.log()
+import path from 'path';
+const jsonfilePath = window.process.argv.slice(-5, -1)[1];
 const jsonfile = require(jsonfilePath);
 //const jsonfile = require(path.join(__dirname, '../app.asar/node_modules/jsonfile'));
 //const jsonfile = require('jsonfile');
@@ -10,6 +10,7 @@ export function getValuesToPopulatePage(storagePath) {
 	//let formSettings = store.getSync('formSettings');
 	//let privateSettings = store.getSync('privateSettings');
 	//let allSettings = {...formSettings, ...privateSettings};
+	console.log(path.join(__dirname, '..', '..', '..', '..', '..', '..', 'processing/processing.exe'));
 	
 	//return(allSettings);
 	//var settings = {};

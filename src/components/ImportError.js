@@ -20,7 +20,7 @@ const jsonfile = require(jsonfilePath);
 //const jsonfile = require('jsonfile');
 
 
-function OutputPage() {
+function ImportError() {
 
   function handleStartAgain(storagePath, settingsDefaults) {
     // set defaults for storage if start again clicked
@@ -33,7 +33,7 @@ function OutputPage() {
   }
 
   function backPage() {
-    changePage('other')
+    changePage('/')
   }
 
   // get store object to pass around for each page, rather than set up each time handleChange called
@@ -73,9 +73,9 @@ function OutputPage() {
                 <Grid container direction="column" className="outer-grid-layout" spacing={2}>
                 <Grid item>
                     <Item>
-                      <h2>Processing Complete</h2>
-                      <p>Results saved to output folder:</p>
-                      <p>{currVars.form['output-path']}</p>
+                      <h2>Errors on Imports</h2>
+                      <p>Errors saved to 'scpannotationwizard.log' at:</p>
+                      <p>{currVars.private['output-path-tag']}</p>
                       {(() => {
                         if (errorText !== '') {
                           return (
@@ -92,7 +92,6 @@ function OutputPage() {
                       </div>
                           )
                         }})()}
-                      <p>See 'scpannotationwizard.log' for more information</p>
                       </Item>
                     <br></br>
                   </Grid>
@@ -100,7 +99,6 @@ function OutputPage() {
                     <Item>
                       <Stack direction="row" alignItems= "center" justifyContent="center" spacing={2}>
                         <Button component={Link} onClick={backPage}>Previous</Button>
-                        <Button component={Link} onClick={() =>handleStartAgain(storagePath, settingsDefaults)} to={""}>Start again</Button>
                       </Stack>
                     </Item>
                     <br></br>
@@ -113,4 +111,4 @@ function OutputPage() {
   );
 };
 
-export default OutputPage;
+export default ImportError;

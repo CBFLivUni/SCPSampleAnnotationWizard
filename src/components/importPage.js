@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useState, setState } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Radio from '@mui/material/Radio';
@@ -13,6 +14,7 @@ import { handleChangePF, setUpStoreObj } from './processForm';
 import { handleProcessImports } from './processImports';
 import { getValuesToPopulatePage } from './populatePages';
 import Zoom from '@mui/material/Zoom';
+import TextField from '@mui/material/TextField';
 
 import { Link } from "react-router-dom";
 
@@ -25,14 +27,23 @@ function ImportPage() {
 
   // this is storage path, passed from from additionalArguments in main.js
   // must be within each page, otherwise can't access window
-  const storagePath = window.process.argv.slice(-4, -1)[0];
+  const storagePath = window.process.argv.slice(-5, -1)[0];
 
   // when page is open, populate with values from store
   let currVars = getValuesToPopulatePage(storagePath);
 
   // when folder radio button is selected, allow selection of directory, when csv, allow file
-  const [allowDir, setDir] = React.useState("true");
-  const [selectRawText, setRawText] = React.useState("Select Folder");
+  // set correct defaults
+  var defAllowDir = "true";
+  var defRawText = "Select Folder";
+  if (currVars['form']['raw-files-group'] === "csv") {
+    defAllowDir = "false";
+    defRawText = "Select File"
+  }
+
+  const [allowDir, setDir] = React.useState(defAllowDir);
+  const [selectRawText, setRawText] = React.useState(defRawText);
+
 
   const handleFolderSet = () => {
 
@@ -49,6 +60,32 @@ function ImportPage() {
     }
   };
 
+  // check if name already exists in form i.e. return from prev page
+  var defTaskName = "";
+  if (currVars['private']['name-job']  !== "undefined") {
+    defTaskName = currVars['private']['name-job'];
+  }
+  const [sanText, setText] = React.useState(defTaskName);
+
+  function sanitiseText(value) {
+    // sanitise task name
+
+    const regex = /^[a-z0-9]+$/i;
+    console.log(regex.test(value))
+    if (value === '' || regex.test(value)) {
+      setText(value);
+
+      // and trigger event to save
+      var event = {
+        target: {
+          name: "name-job",
+          value: value
+        }
+      };
+      handleChangePF(event, store, storagePath)
+    }
+  }
+
   return(
     <div className="App">
           <header className="App-header">
@@ -64,18 +101,20 @@ function ImportPage() {
                           title="Import either folder containing '.raw' files or .csv formatted as in README"
                           arrow placement="top">
                       <Stack direction="row" alignItems= "center" spacing={2}>
-                            <h2>Raw files</h2>
-                          <FormLabel id="raw-files-csv-or-folder-label"></FormLabel>
+                            <h2 className='import_first_col'>Raw files</h2>
+                          <FormLabel style={{'marginLeft': '0px'}} id="raw-files-csv-or-folder-label"></FormLabel>
                           <RadioGroup
                             aria-labelledby="raw-files-csv-or-folder-label"
                             defaultValue={currVars.form["raw-files-group"]}
-                            name="raw-files-group">
+                            name="raw-files-group"
+                            className='import_second_col'>
                             <FormControlLabel onChange={handleFolderSet} value="folder" control={<Radio />} label="Folder" />
                             <FormControlLabel onChange={handleFolderSet} value="csv" control={<Radio />} label="CSV" />
                           </RadioGroup>
                           <Button
                           variant="contained"
                           component="label"
+                          className='import_third_col'
                           >
                             {selectRawText}
                             <input
@@ -99,11 +138,13 @@ function ImportPage() {
                     title="Import .fld file"
                     arrow placement="top">
                       <Stack direction="row" alignItems= "center" spacing={2}>
-                              <h2>Labels file</h2>
+                              <h2 className='import_first_col'>Labels file</h2>
                             <br/>
+                            <div className='import_second_col' style={{'marginLeft': '16px'}}></div>
                             <Button
                           variant="contained"
                           component="label"
+                          className='import_third_col'
                           >
                             Select File
                             <input
@@ -125,11 +166,13 @@ function ImportPage() {
                     title="Import .csv file"
                     arrow placement="top">
                       <Stack direction="row" alignItems= "center" spacing={2}>
-                              <h2>Pickup file</h2>
+                              <h2 className='import_first_col' >Pickup file</h2>
+                              <div className='import_second_col' style={{'marginLeft': '16px'}}></div>
                             <br/>
                             <Button
                           variant="contained"
                           component="label"
+                          className='import_third_col'
                           >
                             Select File
                             <input
@@ -151,11 +194,13 @@ function ImportPage() {
                     TransitionComponent={Zoom}
                     arrow placement="top">
                       <Stack direction="row" alignItems= "center" spacing={2}>
-                                <h2>Cell files</h2>
+                                <h2 className='import_first_col' >Cell files</h2>
+                                <div className='import_second_col' style={{'marginLeft': '16px'}}></div>
                               <br/>
                               <Button
                           variant="contained"
                           component="label"
+                          className='import_third_col'
                           >
                             Select File
                             <input
@@ -174,27 +219,20 @@ function ImportPage() {
                   <Grid item>
                     <Item>
                               <Tooltip
-                              title="Select output directory"
+                              title="Provide folder name to send output to"
                               TransitionComponent={Zoom}
                               arrow placement="top">
                     <Stack direction="row" alignItems= "center" spacing={2}>
-                                <h2>Output folder</h2>
+                                <h2 className='import_first_col' >Task name</h2>
+                                <div className='import_second_col' style={{'marginLeft': '16px'}}></div>
                               <br/>
-                              <Button
-                                variant="contained"
-                                component="label"
-                                >
-                                  Select Folder
-                                  <input
-                                    name="output-path"
-                                    webkitdirectory="true"
-                                    directory="true"
-                                    type="file"
-                                    hidden
-                                  />
-                                </Button>
-                              <p id="output-path-tag"
-                            className="p_tag_import">{currVars.private["output-path-tag"]}</p>
+                              <TextField
+                                name="name-job"
+                                placeholder="Enter folder name"
+                                type="text"
+                                value={sanText}
+                                onChange={(e) => sanitiseText(e.target.value)}
+                                variant="outlined" />
                           </Stack>
                               </Tooltip>
                     </Item>

@@ -52,8 +52,23 @@
 }
 
 .p_tag_import {
+  /*max-width: 30%;*/
   max-width: 30ch;
   overflow-wrap: break-word;
   word-wrap: break-word;
   hyphens: auto;
 }
+
+/*
+.import_first_col {
+  width: 25%
+}
+
+.import_second_col {
+  width: 15%
+}
+
+.import_third_col {
+  width: 20%
+}
+*/

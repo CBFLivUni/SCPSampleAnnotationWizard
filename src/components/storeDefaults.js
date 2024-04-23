@@ -12,7 +12,7 @@ export const settingsDefaults = {form:{"raw-files-group": "folder",
 									"cell-population-names": "undefined",
 									"meta-to-include": "undefined",
 									"column-mismatches": "undefined",
-									"label-missing-data": "Control",
+									"label-missing-data": "Control"
 									},
 								private:{"raw-files-path-tag": "No raw files loaded",
 									"label-file-path-tag": "No labels file loaded",
@@ -22,5 +22,6 @@ export const settingsDefaults = {form:{"raw-files-group": "folder",
 									"NextImportButton-text": "Complete all imports",
 									"NextImportButton-disabled": true,
 									"select-tmt-mapping-disabled": true,
-									"tmt-mapping-path-tag": "No mapping CSV loaded"}};
+									"tmt-mapping-path-tag": "No mapping CSV loaded",
+									"name-job": "undefined"}};
 

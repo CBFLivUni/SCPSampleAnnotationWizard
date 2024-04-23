@@ -30,6 +30,8 @@ const jsonfilePath = isDev
   ? 'jsonfile'
   : path.join(__dirname, '../app.asar/node_modules/jsonfile');
 
+const outputPath = app.getPath('documents');
+
 function createWindow() {
 
   var mainWindow = new BrowserWindow({
@@ -41,7 +43,7 @@ function createWindow() {
       nodeIntegration: true,
       contextIsolation: false,
       enableRemoteModule: true,
-      additionalArguments: [storagePath, jsonfilePath, isDev.toString()]  // pass some paths and check if dev to all processes.
+      additionalArguments: [storagePath, jsonfilePath, isDev.toString(), outputPath]  // pass some paths and check if dev to all processes.
       //preload: path.join(__dirname, 'preload.js')
     },
   });

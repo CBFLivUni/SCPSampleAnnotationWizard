@@ -29,20 +29,18 @@
       "craco.config.cjs",
       "package-lock.json",
       "main.js",
-      "force.config.cjs"
-    ],
-    "win": {
-      "mis": true
-    }
+      "force.config.cjs",
+      "!out",
+      "!processingpy"
+    ]
   },
   "dependencies": {
+    "@electron/remote": "^2.1.2",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.0",
     "@fontsource/roboto": "^5.0.12",
     "@mui/icons-material": "^5.15.13",
     "@mui/material": "^5.15.11",
-    "@mui/x-data-grid": "^6.19.6",
-    "@mui/x-data-grid-generator": "^6.19.6",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -52,22 +50,20 @@
     "electron-squirrel-startup": "^1.0.0",
     "electron-store": "^8.2.0",
     "file-system": "^2.2.2",
-    "formik": "^2.4.5",
-    "fs-jetpack": "^5.1.0",
-    "graceful-fs": "^4.2.11",
+    "jsonfile": "^6.1.0",
+    "modclean": "^3.0.0-beta.1",
     "node-fetch": "^2.6.1",
     "path": "^0.12.7",
-    "jsonfile": "^6.1.0",
     "path-browserify": "^1.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.51.0",
     "react-router-dom": "^6.22.3",
     "react-scripts": "^5.0.1",
+    "sanitize-filename": "^1.6.3",
     "temp-dir": "^3.0.0",
     "wait-on": "^7.2.0",
-    "web-vitals": "^2.1.4",
-    "yup": "^1.4.0"
+    "web-vitals": "^2.1.4"
   },
   "scripts": {
     "_start": "react-scripts start",

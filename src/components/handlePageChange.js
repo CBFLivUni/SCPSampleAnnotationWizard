@@ -1,4 +1,4 @@
-const isDev = window.process.argv.slice(-4, -1)[2];
+const isDev = window.process.argv.slice(-5, -1)[2];
 
 export function changePage(page) {
 	// in production pages are changed using hashrouter and require page refresh

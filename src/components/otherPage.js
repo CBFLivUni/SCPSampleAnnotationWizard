@@ -36,8 +36,8 @@ function OtherPage() {
 
   // this is storage path, passed from from additionalArguments in main.js
   // must be within each page, otherwise can't access window
-  const storagePath = window.process.argv.slice(-4, -1)[0];
-  const isDev = window.process.argv.slice(-4, -1)[2];
+  const storagePath = window.process.argv.slice(-5, -1)[0];
+  const isDev = window.process.argv.slice(-5, -1)[2];
 
   // when page is open, populate with values from store
   let currVars = getValuesToPopulatePage(storagePath);
@@ -114,7 +114,7 @@ function OtherPage() {
       let pythonProcess;
 
       if (isDev === "true") {
-        let pythonProcess = spawnSync('C:/Users/alexr/PycharmProjects/3_9/python/Scripts/python',["C:/Users/alexr/OneDrive/Documents/Work/CBF/Emmott_Annotation/code/processing.py", storagePath, "analysis"]);
+        let pythonProcess = spawnSync(path.join(__dirname, '..', '..', '..', '..', '..', '..', 'processing/processing.exe'), [storagePath, "analysis"]);
       } else {
         console.log("processing.exe path is:")
         console.log(path.join(__dirname, '..', 'processing/processing.exe'));
@@ -190,13 +190,22 @@ function OtherPage() {
                       <Stack direction="row" alignItems= "center" spacing={2}>
                         <h2 display="inline">Add extra rows per raw file</h2>
                           <div>
-                          <form>
-                            <TextField value={inputValue} onChange={handleChangeER}/>
-                            <Button variant="contained" onClick={handleSubmitER}>Add</Button>
+                            <form>
+                            <div style={{"display": "flex", "align-items": "center"}}>
+                            <TextField
+                            value={inputValue}
+                            onChange={handleChangeER}/>
+                            <Button
+                            variant="contained"
+                            style={{"margin-left": "16px"}}
+                            onClick={handleSubmitER}>Add</Button>
+                            </div>
                             </form>
                           <List id="extra-rows-to-add">
                             {rows.map((row, index) => (
-                              <ListItem key={index}>{row}
+                              <ListItem
+                              style={{"display": "flex", "justify-content": "space-evenly", "font-size": "140%"}}
+                              key={index}>{row}
                                 <Button variant="contained" onClick={() =>handleDeleteER(index)}>Delete</Button>
                               </ListItem>
                             ))}

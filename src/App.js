@@ -12,6 +12,7 @@ import ImportPage from "./components/importPage";
 import MetaPage from "./components/metaPage";
 import OtherPage from "./components/otherPage";
 import OutputPage from "./components/outputPage";
+import ImportError from "./components/ImportError";
 
 function App() {
 
@@ -22,6 +23,7 @@ function App() {
       <Route path="meta" element={<MetaPage />} />
       <Route path="other" element={<OtherPage />} />
       <Route path="output" element={<OutputPage />} />
+      <Route path="importerror" element={<ImportError />} />
       </Routes>
     </div>
   );
