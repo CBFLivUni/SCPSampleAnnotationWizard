@@ -64,6 +64,13 @@ function createWindow() {
 app.on('ready', () => {
   createWindow();
 
+  app.on('activate', () => {
+    // for mac
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
+  });
+
   // remove json to reset user settings when starting app
   store.setDataPath(os.tmpdir());
 	store.clear();
@@ -83,13 +90,3 @@ app.on('window-all-closed', () => {
     app.quit();
   }
 });
-
-app.on('activate', () => {
-  //if (mainWindow === null) {
-  //  createWindow();
-  //}
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
-  }
-});
-
