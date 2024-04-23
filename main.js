@@ -22,7 +22,7 @@ const __dirname = dirname(__filename);
 
 // put this in path next to asar. not in, cannot access if in
 const storagePath = isDev
-  ? app.getAppPath('userData') + '\\data.json'
+  ? app.getAppPath('userData') + '/data.json'
   : path.join(app.getAppPath('userData'), '..', '/data.json');
 
 // in production jsonfile cannot be found for some reason (other modules can) so give path
@@ -33,7 +33,7 @@ const jsonfilePath = isDev
 const outputPath = app.getPath('documents');
 
 function createWindow() {
-
+  
   var mainWindow = new BrowserWindow({
     width: 800,
     height: 1000,
@@ -43,11 +43,12 @@ function createWindow() {
       nodeIntegration: true,
       contextIsolation: false,
       enableRemoteModule: true,
-      additionalArguments: [storagePath, jsonfilePath, isDev.toString(), outputPath]  // pass some paths and check if dev to all processes.
+      // pass some paths and check if dev to all processes. must be string, that is parsed later
+      additionalArguments: ['ARGS' + '|storagePath-' + storagePath + '|jsonfilePath-' + jsonfilePath + '|isDev-' + isDev.toString() + '|outputPath-' + outputPath]  // pass some paths and check if dev to all processes.
       //preload: path.join(__dirname, 'preload.js')
     },
   });
-  //mainWindow.webContents.openDevTools()
+  mainWindow.webContents.openDevTools()
 
   log.initialize();
 

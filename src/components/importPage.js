@@ -12,7 +12,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Stack from '@mui/material/Stack';
 import { handleChangePF, setUpStoreObj } from './processForm';
 import { handleProcessImports } from './processImports';
-import { getValuesToPopulatePage } from './populatePages';
+import { getValuesToPopulatePage, processAdditionalArgs } from './populatePages';
 import Zoom from '@mui/material/Zoom';
 import TextField from '@mui/material/TextField';
 
@@ -27,7 +27,7 @@ function ImportPage() {
 
   // this is storage path, passed from from additionalArguments in main.js
   // must be within each page, otherwise can't access window
-  const storagePath = window.process.argv.slice(-5, -1)[0];
+  const storagePath = processAdditionalArgs(window.process.argv)['storagePath'];
 
   // when page is open, populate with values from store
   let currVars = getValuesToPopulatePage(storagePath);

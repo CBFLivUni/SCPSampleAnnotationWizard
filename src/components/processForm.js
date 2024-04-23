@@ -1,11 +1,12 @@
 import log from 'electron-log'
+import { processAdditionalArgs } from './populatePages';
 log.initialize();
 var path = require('path');
-const jsonfilePath = window.process.argv.slice(-5, -1)[1];
+const jsonfilePath = processAdditionalArgs(window.process.argv)['jsonfilePath'];
 const jsonfile = require(jsonfilePath);
 //const jsonfile = require(path.join(__dirname, '../app.asar/node_modules/jsonfile'));
 //const jsonfile = require('jsonfile');
-const outputPath = window.process.argv.slice(-5, -1)[3];
+const outputPath = processAdditionalArgs(window.process.argv)['outputPath'];
 
 function processImportPaths(event, tag, storagePath) {
   // update text in p element with upload name and get real path

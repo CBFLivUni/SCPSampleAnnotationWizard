@@ -44,6 +44,7 @@
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "concurrently": "^8.2.2",
     "electron-is-dev": "^3.0.1",
     "electron-json-storage": "^4.6.0",
     "electron-log": "^5.1.2",

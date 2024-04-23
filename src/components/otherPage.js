@@ -20,6 +20,7 @@ import Zoom from '@mui/material/Zoom';
 import Item from '../components/Item';
 
 import { handleChangePF, setUpStoreObj } from './processForm';
+import { processAdditionalArgs } from './populatePages';
 import { getValuesToPopulatePage } from './populatePages';
 
 import { Link } from "react-router-dom";
@@ -36,8 +37,8 @@ function OtherPage() {
 
   // this is storage path, passed from from additionalArguments in main.js
   // must be within each page, otherwise can't access window
-  const storagePath = window.process.argv.slice(-5, -1)[0];
-  const isDev = window.process.argv.slice(-5, -1)[2];
+  const storagePath = processAdditionalArgs(window.process.argv)['storagePath'];
+  const isDev = processAdditionalArgs(window.process.argv)['isDev'];
 
   // when page is open, populate with values from store
   let currVars = getValuesToPopulatePage(storagePath);

@@ -4,7 +4,9 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter, HashRouter } from "react-router-dom";
-const isDev = window.process.argv.slice(-5, -1)[2];
+import { processAdditionalArgs } from './components/populatePages';
+
+const isDev = processAdditionalArgs(window.process.argv)['isDev'];
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 

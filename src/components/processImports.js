@@ -1,11 +1,12 @@
 import { handleChangePF } from './processForm';
 import path from 'path';
 import { changePage } from './handlePageChange';
+import { processAdditionalArgs } from './populatePages';
 const { spawnSync } = require('node:child_process');
-const isDev = window.process.argv.slice(-5, -1)[2];
+const isDev = processAdditionalArgs(window.process.argv)['isDev'];
 var fs = require('fs');
 
-const jsonfilePath = window.process.argv.slice(-5, -1)[1];
+const jsonfilePath = processAdditionalArgs(window.process.argv)['jsonfilePath'];
 const jsonfile = require(jsonfilePath);
 //const jsonfile = require(path.join(__dirname, '../app.asar/node_modules/jsonfile'));
 //const jsonfile = require('jsonfile');
