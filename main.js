@@ -34,7 +34,7 @@ const outputPath = app.getPath('documents');
 
 function createWindow() {
   
-  var mainWindow = new BrowserWindow({
+  let mainWindow = new BrowserWindow({
     width: 800,
     height: 1000,
     icon: path.join(__dirname, 'favicon_wiz.ico'),
@@ -58,18 +58,15 @@ function createWindow() {
 
   mainWindow.loadURL(startURL);
 
-  mainWindow.on('closed', () => (mainWindow = null));
+  //mainWindow.on('closed', () => (mainWindow = null));
+};
 
-}
-
-app.on('ready', () => {
-  createWindow();
+app.whenReady().then(() => {
+  createWindow()
 
   app.on('activate', () => {
     // for mac
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
-    }
+    if (BrowserWindow.getAllWindows().length === 0) createWindow()
   });
 
   // remove json to reset user settings when starting app
@@ -87,7 +84,5 @@ app.on('ready', () => {
 });
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
+  if (process.platform !== 'darwin') app.quit()
 });
