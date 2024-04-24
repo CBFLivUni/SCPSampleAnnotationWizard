@@ -4,6 +4,7 @@ import { changePage } from './handlePageChange';
 import { processAdditionalArgs } from './populatePages';
 const { spawnSync } = require('node:child_process');
 const isDev = processAdditionalArgs(window.process.argv)['isDev'];
+const platform = processAdditionalArgs(window.process.argv)['platform'];
 var fs = require('fs');
 
 const jsonfilePath = processAdditionalArgs(window.process.argv)['jsonfilePath'];
@@ -144,7 +145,14 @@ function getDataFromImports(storagePath, store) {
 	// run in sync, only continue processing when exited
 	
 	if (isDev === "true") {
-		let pythonProcess = spawnSync(path.join(__dirname, '..', '..', '..', '..', '..', '..', 'processing/processing.exe'), [storagePath, "processimport"]);
+		let pythonProcess;
+		if (platform === 'darwin') {
+			// mac dev
+			pythonProcess = spawnSync(path.join(__dirname, '..', '..', '..', '..', '..', '..', '..', '..', 'processing/processing'), [storagePath, "processimport"]);
+		} else {
+			// windows dev
+			pythonProcess = spawnSync(path.join(__dirname, '..', '..', '..', '..', '..', '..', 'processing/processing.exe'), [storagePath, "processimport"]);
+		}
 		console.log(pythonProcess.stderr);
 		return pythonProcess.stderr;
 	} else {

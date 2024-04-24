@@ -28,6 +28,7 @@ import path from 'path';
 import { changePage } from './handlePageChange';
 
 const { spawnSync } = require('node:child_process');
+const platform = processAdditionalArgs(window.process.argv)['platform'];
 
 
 function OtherPage() {
@@ -110,7 +111,13 @@ function OtherPage() {
       let pythonProcess;
 
       if (isDev === "true") {
-        let pythonProcess = spawnSync(path.join(__dirname, '..', '..', '..', '..', '..', '..', 'processing/processing.exe'), [storagePath, "analysis"]);
+        if (platform === 'darwin') {
+          // mac dev
+          pythonProcess = spawnSync(path.join(__dirname, '..', '..', '..', '..', '..', '..', '..', '..', 'processing/processing'), [storagePath, "analysis"]);
+        } else {
+          // windows dev
+          pythonProcess = spawnSync(path.join(__dirname, '..', '..', '..', '..', '..', '..', 'processing/processing.exe'), [storagePath, "analysis"]);
+        }
       } else {
         console.log("processing.exe path is:")
         console.log(path.join(__dirname, '..', 'processing/processing.exe'));

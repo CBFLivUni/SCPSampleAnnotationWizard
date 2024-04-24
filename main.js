@@ -44,7 +44,7 @@ function createWindow() {
       contextIsolation: false,
       enableRemoteModule: true,
       // pass some paths and check if dev to all processes. must be string, that is parsed later
-      additionalArguments: ['ARGS' + '|storagePath-' + storagePath + '|jsonfilePath-' + jsonfilePath + '|isDev-' + isDev.toString() + '|outputPath-' + outputPath]  // pass some paths and check if dev to all processes.
+      additionalArguments: ['ARGS' + '|storagePath-' + storagePath + '|jsonfilePath-' + jsonfilePath + '|isDev-' + isDev.toString() + '|outputPath-' + outputPath + '|platform-' + process.platform]  // pass some paths and check if dev to all processes.
       //preload: path.join(__dirname, 'preload.js')
     },
   });
