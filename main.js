@@ -77,6 +77,9 @@ app.whenReady().then(() => {
   // using electron json storage
   store.set('formSettings', settingsDefaults);  //formSettingsDefaults
 
+  log.info('process')
+  log.info(process.platform)
+
   // check settings being set correctly
   log.info("storagePath is:")
   log.info(storagePath)

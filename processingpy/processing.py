@@ -52,7 +52,7 @@ try:
 	label_missing = user_data['form']['label-missing-data']
 
 	# set up logging asap
-	logging.basicConfig(filename=output_path + "\\scpannotationwizard.log", level=logging.INFO)
+	logging.basicConfig(filename=output_path + "/scpannotationwizard.log", level=logging.INFO)
 
 	# if just for processing import data to populate metadata page
 	if analysis == 'processimport':
@@ -72,7 +72,7 @@ try:
 				sys.exit("Check '" + str(f) + "' is valid .csv as Cell File")
 			curr_cols = [c.strip() for c in list(f_df.columns)]  # strip any whitespace
 			columns = columns + curr_cols
-			f_to_col[f.split("\\")[-1]] = curr_cols
+			f_to_col[f.split("/")[-1]] = curr_cols
 
 		unique_cols = list(set(columns))
 		
@@ -115,7 +115,7 @@ try:
 				dir_path = os.path.dirname(os.path.abspath(__file__))
 			logging.info('processing.exe path: ' + dir_path)
 			try:
-				tmt_mapping_xl = pd.read_csv(dir_path + "\\WelltoTMTmappingDefault.csv")
+				tmt_mapping_xl = pd.read_csv(dir_path + "/WelltoTMTmappingDefault.csv")
 			except FileNotFoundError as e:
 				logging.error("Default file '" + str(tmt_mapping_path) + "' not found report to development team")
 				sys.exit("Default file '" + str(tmt_mapping_path) + "' not found report to development team")
@@ -174,7 +174,7 @@ try:
 				if f.endswith(".raw"):
 					raw_files.append(f)
 					creation_times.append(
-							time.ctime(os.path.getmtime(rawfile_path + "\\" + f))
+							time.ctime(os.path.getmtime(rawfile_path + "/" + f))
 							)
 			
 			raw_files_df = pd.DataFrame(data={"RawFileName": raw_files, "MSAquisDateTime": creation_times})
@@ -401,7 +401,7 @@ try:
 						c='black')
 			
 		plt.tight_layout()
-		plt.savefig(output_path + "\\pickup_matching_field_plot.png", dpi=300)
+		plt.savefig(output_path + "/pickup_matching_field_plot.png", dpi=300)
 
 		# Join that table with rawfiles
 		merged_table_df = merged_table_df.merge(raw_files_df, on='PickupWell', how="inner")
@@ -479,9 +479,9 @@ try:
 
 		# write table
 		try:
-			final_df.to_csv(output_path + "\\scp_sample_annotation_table.csv", index=False)
+			final_df.to_csv(output_path + "/scp_sample_annotation_table.csv", index=False)
 		except PermissionError as e:
-			logging.error("Ensure that '" + output_path + "\\scp_sample_annotation_table.csv" + "' is not open")
+			logging.error("Ensure that '" + output_path + "/scp_sample_annotation_table.csv" + "' is not open")
 			sys.exit(e)
 
 	# regardless of analysis run
