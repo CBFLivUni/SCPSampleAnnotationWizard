@@ -1,7 +1,7 @@
 // electron.js
 //const { app, BrowserWindow } = require('electron');
 //const path = require('path');
-import electron, { app, BrowserWindow } from 'electron'
+import electron, { app, BrowserWindow, ipcMain } from 'electron'
 import store from 'electron-json-storage';
 import log from 'electron-log'
 //import log from 'electron-log/main';
@@ -26,12 +26,23 @@ var storagePath = isDev
   ? path.join(app.getAppPath('userData'), 'data.json')
   : path.join(app.getAppPath('userData'), '..', 'data.json');
 
+// in production need to leave app.asar to write globals.
+// TO DO check this is ok on windows, as seemed ok before on windows.
+
+// can't even pass round path of globals.json consistently as having mac production issues, so set this as a global
+// bit horrible, but not the worst thing in the world. otherwise just can't handle reading the correct file path
+// without knowing isDev, platform etc. which can't do in renderer processes, no other paths are consistent
+// across main and renderer.
+//global.GlobalJSONPath = path.join(__dirname, 'globals.json')
+
 // in production jsonfile cannot be found for some reason (other modules can) so give path
 var jsonfilePath = isDev
   ? 'jsonfile'
   : path.join(__dirname, '../app.asar/node_modules/jsonfile');
 
 var outputPath = app.getPath('documents');
+
+log.initialize();
 
 function createWindow() {
 
@@ -41,11 +52,6 @@ function createWindow() {
   jsonfilePath = jsonfilePath.replace(/\\/g, '\\\\'); // escape backslashes
   outputPath = outputPath.replace(/\\/g, '\\\\'); // escape backslashes
 
-  log.initialize();
-  log.info(process.platform.toString());
-  log.info(process.platform)
-  log.info('ARGS' + '|storagePath-' + storagePath + '|jsonfilePath-' + jsonfilePath + '|isDev-' + isDev.toString() + '|outputPath-' + outputPath + '|platform-' + process.platform.toString())
-  
   //fs.writeFileSync('globals.js', 'ARGS' + '|storagePath-' + storagePath + '|jsonfilePath-' + jsonfilePath + '|isDev-' + isDev.toString() + '|outputPath-' + outputPath + '|platform-' + process.platform.toString())
 
   let settings = {"storagePath": storagePath,
@@ -55,7 +61,14 @@ function createWindow() {
                   "platform": process.platform.toString()};
 
   var settingsString = JSON.stringify(settings);
-  fs.writeFileSync('globals.json', settingsString);
+
+  //fs.writeFileSync(global.GlobalJSONPath, settingsString);
+  //fs.writeFileSync('globals.json', settingsString);  // working on everything other than mac prod
+
+  // in dev this works 
+  //log.info(global.GlobalJSONPath);
+  //fs.writeFileSync(path.join('globals.json'), settingsString);
+  log.info(path.join(__dirname, 'src', 'preload.js'))
 
   let mainWindow = new BrowserWindow({
     width: 800,
@@ -68,18 +81,20 @@ function createWindow() {
       enableRemoteModule: true,
       // pass some paths and check if dev to all processes. must be string, that is parsed later
       //additionalArguments: ['ARGS' + '|storagePath-' + storagePath + '|jsonfilePath-' + jsonfilePath + '|isDev-' + isDev.toString() + '|outputPath-' + outputPath + '|platform-' + process.platform.toString()]  // pass some paths and check if dev to all processes.
-      //preload: path.join(__dirname, 'preload.js')
+      preload: path.join(__dirname, 'src', 'preload.js')
     },
   });
-  //mainWindow.webContents.openDevTools()
+  mainWindow.webContents.openDevTools()
 
   const startURL = isDev
     ? 'http://localhost:3000'
     : `file://${path.join(__dirname, '../build/index.html#')}`;  // as use hashrouter
 
   log.info(startURL);
-  mainWindow.loadURL(startURL);
-
+  mainWindow.loadURL(startURL)
+    .then(() => { mainWindow.webContents.send('sendSettings', settings); })
+    .then(() => mainWindow.show())
+  return mainWindow
   //mainWindow.on('closed', () => (mainWindow = null));
 };
 
@@ -105,10 +120,15 @@ app.whenReady().then(() => {
   // check settings being set correctly
   log.info("storagePath is:")
   log.info(storagePath)
+
+  log.info("globals path:")
+  log.info(global.GlobalJSONPath);
+
   jsonfile.writeFileSync(storagePath, settingsDefaults)
 });
 
 app.on('window-all-closed', () => {
-  fs.unlinkSync('globals.json');
+  //fs.unlinkSync('globals.json');
+  fs.unlinkSync(global.GlobalJSONPath);
   if (process.platform !== 'darwin') app.quit()
 });

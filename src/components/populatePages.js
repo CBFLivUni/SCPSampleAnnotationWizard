@@ -1,4 +1,5 @@
 import path from 'path';
+import log from 'electron-log'
 const fs = require('fs');
 const jsonfilePath = processAdditionalArgs('jsonfilePath');
 const jsonfile = require(jsonfilePath);
@@ -20,11 +21,21 @@ export function processAdditionalArgs(key) {
 	// cross platform functionality as Mac vs Windows includes differing number of args
 	// return as JSON
 
-	let settings = JSON.parse(fs.readFileSync("globals.json", "utf8"));
+	// working everywhere other than mac prod
+	console.log('populatepageglobalspath')
+	log.info('populatePages path')
+	//log.info(global.GlobalJSONPath);
+	//let settings = JSON.parse(fs.readFileSync(path.join(global.GlobalJSONPath), "utf8"));
 
-	console.log(settings)
+	let settingsJSON;
+	window.bridge.sendSettings((event, settings) => {
+		settingsJSON = settings;
+	})
+	//let settings = JSON.parse(fs.readFileSync("globals.json", "utf8"));
 
-	return settings[key]
+	console.log(settingsJSON)
+
+	return settingsJSON[key]
 	
 	/*
 	let argString;
