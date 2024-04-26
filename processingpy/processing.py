@@ -28,6 +28,7 @@ try:
 	# get user_data_path as arg
 	user_data_path = sys.argv[1]
 	#user_data_path = r"..\scpannotation\data.json"
+ 	# user_data_path = r"/Users/aroths/Documents/SCPSampleAnnotationWizard/data.json"
 
 	# either 'processimport', 'full'
 	analysis = sys.argv[2]
@@ -52,7 +53,7 @@ try:
 	label_missing = user_data['form']['label-missing-data']
 
 	# set up logging asap
-	logging.basicConfig(filename=output_path + "/scpannotationwizard.log", level=logging.INFO)
+	logging.basicConfig(filename= os.path.join(output_path, "scpannotationwizard.log"), level=logging.INFO)
 
 	# if just for processing import data to populate metadata page
 	if analysis == 'processimport':
@@ -216,7 +217,7 @@ try:
 			full_rows = []
 
 			try:
-				with open(labels_path) as labels_tsv:
+				with open(labels_path, encoding="Windows-1252") as labels_tsv:
 					rd = csv.reader(labels_tsv, delimiter="\t", quotechar='"')
 					for row in rd:
 						# if any elements are empty then don't keep row, or not 3 cols

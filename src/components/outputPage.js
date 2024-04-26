@@ -8,6 +8,7 @@ import TextField from '@mui/material/TextField';
 import Item from '../components/Item';
 
 import { Link } from "react-router-dom";
+import path from 'path';
 
 //import { setUpStoreObj } from './processForm';
 import { getValuesToPopulatePage, processAdditionalArgs } from './populatePages';
@@ -47,7 +48,7 @@ function OutputPage() {
   let currVars = getValuesToPopulatePage(storagePath);
 
   // show errors from log file
-  let logFilePath = currVars.form['output-path'] + "\\scpannotationwizard.log"
+  let logFilePath = path.join(currVars.form['output-path'], "scpannotationwizard.log");
 
   const fs = module.constructor._load('fs');
   let fullLog = fs.readFileSync(logFilePath, 'utf8')
