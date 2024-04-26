@@ -485,7 +485,7 @@ try:
 		try:
 			final_df.to_csv(os.path.join(output_path, "scp_sample_annotation_table.csv"), index=False)
 		except PermissionError as e:
-			logging.error("Ensure that '" + str(os.path.join(output_path, scp_sample_annotation_table.csv)) + "' is not open")
+			logging.error("Ensure that '" + str(os.path.join(output_path, "scp_sample_annotation_table.csv")) + "' is not open")
 			sys.exit(e)
 
 	# regardless of analysis run
