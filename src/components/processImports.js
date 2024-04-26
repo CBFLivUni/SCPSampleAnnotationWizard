@@ -3,11 +3,11 @@ import path from 'path';
 import { changePage } from './handlePageChange';
 import { processAdditionalArgs } from './populatePages';
 const { spawnSync } = require('node:child_process');
-const isDev = processAdditionalArgs(window.process.argv)['isDev'];
-const platform = processAdditionalArgs(window.process.argv)['platform'];
+const isDev = processAdditionalArgs('isDev');
+const platform = processAdditionalArgs('platform');
 var fs = require('fs');
 
-const jsonfilePath = processAdditionalArgs(window.process.argv)['jsonfilePath'];
+const jsonfilePath = processAdditionalArgs('jsonfilePath');
 const jsonfile = require(jsonfilePath);
 //const jsonfile = require(path.join(__dirname, '../app.asar/node_modules/jsonfile'));
 //const jsonfile = require('jsonfile');
@@ -143,7 +143,8 @@ function getDataFromImports(storagePath, store) {
 	//https://stackoverflow.com/questions/41199981/run-python-script-in-electron-app
 
 	// run in sync, only continue processing when exited
-	
+	console.log(isDev)
+	console.log(platform)
 	if (isDev === "true") {
 		let pythonProcess;
 		if (platform === 'darwin') {
@@ -151,6 +152,9 @@ function getDataFromImports(storagePath, store) {
 			pythonProcess = spawnSync(path.join(__dirname, '..', '..', '..', '..', '..', '..', '..', '..', 'processing/processing'), [storagePath, "processimport"]);
 		} else {
 			// windows dev
+			console.log(__dirname)
+			console.log(path.join(__dirname, '..', '..', '..', '..', '..', '..', 'processing/processing.exe'));
+			console.log(path.join(__dirname, '..', 'processing/processing.exe'));
 			pythonProcess = spawnSync(path.join(__dirname, '..', '..', '..', '..', '..', '..', 'processing/processing.exe'), [storagePath, "processimport"]);
 		}
 		console.log(pythonProcess.stderr);
@@ -178,6 +182,9 @@ export function handleProcessImports(storagePath, store) {
         fs.mkdirSync(output_path, { recursive: true });
 	};
 
+	console.log(currSettings);
+	console.log(storagePath);
+
 	// run python script to update json
 	let stderr = getDataFromImports(storagePath, store)
 	console.log(stderr)
@@ -202,6 +209,4 @@ export function handleProcessImports(storagePath, store) {
 		// go to meta page only once processing done
 		changePage('meta');
 	}
-
-	
 }

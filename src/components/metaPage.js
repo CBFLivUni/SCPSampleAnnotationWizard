@@ -50,7 +50,7 @@ function MetaPage() {
 
   // this is storage path, passed from from additionalArguments in main.js
   // must be within each page, otherwise can't access window
-  const storagePath = processAdditionalArgs(window.process.argv)['storagePath'];
+  const storagePath = processAdditionalArgs('storagePath');
 
   function handleCellFileMismatches(html, store, storagePath) {
     // handle saving cell file mismatch data

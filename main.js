@@ -15,25 +15,48 @@ import isDev from 'electron-is-dev'
 //import * as fs from 'fs';
 import jsonfile from 'jsonfile'
 import { settingsDefaults} from './src/components/storeDefaults.js'
+import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 // set path for file storage, send to all processes
 
 // put this in path next to asar. not in, cannot access if in
-const storagePath = isDev
-  ? app.getAppPath('userData') + '/data.json'
-  : path.join(app.getAppPath('userData'), '..', '/data.json');
+var storagePath = isDev
+  ? path.join(app.getAppPath('userData'), 'data.json')
+  : path.join(app.getAppPath('userData'), '..', 'data.json');
 
 // in production jsonfile cannot be found for some reason (other modules can) so give path
-const jsonfilePath = isDev
+var jsonfilePath = isDev
   ? 'jsonfile'
   : path.join(__dirname, '../app.asar/node_modules/jsonfile');
 
-const outputPath = app.getPath('documents');
+var outputPath = app.getPath('documents');
 
 function createWindow() {
+
+  // sanitise file paths if windows. Windows uses \ by default, so act as escape chars.
+  // fine on mac
+  storagePath = storagePath.replace(/\\/g, '\\\\'); // escape backslashes
+  jsonfilePath = jsonfilePath.replace(/\\/g, '\\\\'); // escape backslashes
+  outputPath = outputPath.replace(/\\/g, '\\\\'); // escape backslashes
+
+  log.initialize();
+  log.info(process.platform.toString());
+  log.info(process.platform)
+  log.info('ARGS' + '|storagePath-' + storagePath + '|jsonfilePath-' + jsonfilePath + '|isDev-' + isDev.toString() + '|outputPath-' + outputPath + '|platform-' + process.platform.toString())
   
+  //fs.writeFileSync('globals.js', 'ARGS' + '|storagePath-' + storagePath + '|jsonfilePath-' + jsonfilePath + '|isDev-' + isDev.toString() + '|outputPath-' + outputPath + '|platform-' + process.platform.toString())
+
+  let settings = {"storagePath": storagePath,
+                  "jsonfilePath": jsonfilePath,
+                  "isDev": isDev.toString(),
+                  "outputPath": outputPath,
+                  "platform": process.platform.toString()};
+
+  var settingsString = JSON.stringify(settings);
+  fs.writeFileSync('globals.json', settingsString);
+
   let mainWindow = new BrowserWindow({
     width: 800,
     height: 1000,
@@ -44,18 +67,17 @@ function createWindow() {
       contextIsolation: false,
       enableRemoteModule: true,
       // pass some paths and check if dev to all processes. must be string, that is parsed later
-      additionalArguments: ['ARGS' + '|storagePath-' + storagePath + '|jsonfilePath-' + jsonfilePath + '|isDev-' + isDev.toString() + '|outputPath-' + outputPath + '|platform-' + process.platform]  // pass some paths and check if dev to all processes.
+      //additionalArguments: ['ARGS' + '|storagePath-' + storagePath + '|jsonfilePath-' + jsonfilePath + '|isDev-' + isDev.toString() + '|outputPath-' + outputPath + '|platform-' + process.platform.toString()]  // pass some paths and check if dev to all processes.
       //preload: path.join(__dirname, 'preload.js')
     },
   });
   mainWindow.webContents.openDevTools()
 
-  log.initialize();
-
   const startURL = isDev
     ? 'http://localhost:3000'
     : `file://${path.join(__dirname, '../build/index.html#')}`;  // as use hashrouter
 
+  log.info(startURL);
   mainWindow.loadURL(startURL);
 
   //mainWindow.on('closed', () => (mainWindow = null));
@@ -87,5 +109,6 @@ app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', () => {
+  fs.unlinkSync('globals.json');
   if (process.platform !== 'darwin') app.quit()
 });

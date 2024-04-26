@@ -1,5 +1,5 @@
 import { processAdditionalArgs } from './populatePages';
-const isDev = processAdditionalArgs(window.process.argv)['isDev'];
+const isDev = processAdditionalArgs('isDev');
 
 export function changePage(page) {
 	// in production pages are changed using hashrouter and require page refresh

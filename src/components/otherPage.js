@@ -28,7 +28,7 @@ import path from 'path';
 import { changePage } from './handlePageChange';
 
 const { spawnSync } = require('node:child_process');
-const platform = processAdditionalArgs(window.process.argv)['platform'];
+const platform = processAdditionalArgs('platform');
 
 
 function OtherPage() {
@@ -38,8 +38,8 @@ function OtherPage() {
 
   // this is storage path, passed from from additionalArguments in main.js
   // must be within each page, otherwise can't access window
-  const storagePath = processAdditionalArgs(window.process.argv)['storagePath'];
-  const isDev = processAdditionalArgs(window.process.argv)['isDev'];
+  const storagePath = processAdditionalArgs('storagePath');
+  const isDev = processAdditionalArgs('isDev');
 
   // when page is open, populate with values from store
   let currVars = getValuesToPopulatePage(storagePath);

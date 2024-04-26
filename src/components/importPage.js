@@ -27,7 +27,7 @@ function ImportPage() {
 
   // this is storage path, passed from from additionalArguments in main.js
   // must be within each page, otherwise can't access window
-  const storagePath = processAdditionalArgs(window.process.argv)['storagePath'];
+  const storagePath = processAdditionalArgs('storagePath');
 
   // when page is open, populate with values from store
   let currVars = getValuesToPopulatePage(storagePath);

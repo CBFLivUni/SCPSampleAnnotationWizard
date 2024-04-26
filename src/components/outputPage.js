@@ -14,7 +14,7 @@ import { getValuesToPopulatePage, processAdditionalArgs } from './populatePages'
 import { settingsDefaults} from './storeDefaults.js'
 import { changePage } from './handlePageChange';
 
-const jsonfilePath = processAdditionalArgs(window.process.argv)['jsonfilePath'];
+const jsonfilePath = processAdditionalArgs('jsonfilePath');
 const jsonfile = require(jsonfilePath);
 //const jsonfile = require(path.join(__dirname, '../app.asar/node_modules/jsonfile'));
 //const jsonfile = require('jsonfile');
@@ -41,7 +41,7 @@ function OutputPage() {
 
   // this is storage path, passed from from additionalArguments in main.js
   // must be within each page, otherwise can't access window
-  const storagePath = processAdditionalArgs(window.process.argv)['storagePath'];
+  const storagePath = processAdditionalArgs('storagePath');
 
   // when page is open, populate with values from store
   let currVars = getValuesToPopulatePage(storagePath);

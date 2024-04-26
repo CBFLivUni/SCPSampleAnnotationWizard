@@ -6,7 +6,7 @@ import reportWebVitals from './reportWebVitals';
 import { BrowserRouter, HashRouter } from "react-router-dom";
 import { processAdditionalArgs } from './components/populatePages';
 
-const isDev = processAdditionalArgs(window.process.argv)['isDev'];
+const isDev = processAdditionalArgs('isDev');
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
