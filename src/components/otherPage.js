@@ -143,7 +143,6 @@ function OtherPage() {
                               <AddIcon />
                             </IconButton>
 
-
   return(
     <div className="App">
           <header className="App-header">

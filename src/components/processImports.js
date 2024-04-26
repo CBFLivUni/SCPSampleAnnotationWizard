@@ -122,8 +122,15 @@ function processLoadCellPopulationNames(formSettings, storagePath, store) {
 	// parse names of cell files from array
 	for (var i = 0; i < cellPathArray.length; i++) {
 
+		// just get filename regardless of mac or windows
 		// remove everything before the last "\\""
-		let lastIndex = cellPathArray[i].lastIndexOf('\\');
+		let lastIndex;
+		console.log(cellPathArray[i])
+		if (cellPathArray[i].includes('\\')) {
+			lastIndex = cellPathArray[i].lastIndexOf('\\');
+		} else if (cellPathArray[i].includes('/')) {
+			lastIndex = cellPathArray[i].lastIndexOf('/');
+		}
       	let fileNameWPath = cellPathArray[i].substr(lastIndex+1, cellPathArray[i].length)
 
 		// remove file extension
