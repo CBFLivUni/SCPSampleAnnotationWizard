@@ -25,6 +25,7 @@
     },
     "files": [
       "package.json",
+      "preload.js",
       "data.json",
       "craco.config.cjs",
       "package-lock.json",

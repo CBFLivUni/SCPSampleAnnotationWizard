@@ -60,7 +60,9 @@ function createWindow() {
                   "outputPath": outputPath,
                   "platform": process.platform.toString()};
 
-  var settingsString = JSON.stringify(settings);
+  //var settingsString = JSON.stringify(settings);
+
+  console.log(settings)
 
   //fs.writeFileSync(global.GlobalJSONPath, settingsString);
   //fs.writeFileSync('globals.json', settingsString);  // working on everything other than mac prod
@@ -68,7 +70,7 @@ function createWindow() {
   // in dev this works 
   //log.info(global.GlobalJSONPath);
   //fs.writeFileSync(path.join('globals.json'), settingsString);
-  log.info(path.join(__dirname, 'src', 'preload.js'))
+  log.info(path.join(__dirname, 'preload.js'))
 
   let mainWindow = new BrowserWindow({
     width: 800,
@@ -81,18 +83,20 @@ function createWindow() {
       enableRemoteModule: true,
       // pass some paths and check if dev to all processes. must be string, that is parsed later
       //additionalArguments: ['ARGS' + '|storagePath-' + storagePath + '|jsonfilePath-' + jsonfilePath + '|isDev-' + isDev.toString() + '|outputPath-' + outputPath + '|platform-' + process.platform.toString()]  // pass some paths and check if dev to all processes.
-      preload: path.join(__dirname, 'src', 'preload.js')
+      //preload: path.join(__dirname, 'preload.js')
     },
   });
-  mainWindow.webContents.openDevTools()
+  //mainWindow.webContents.openDevTools()
 
   const startURL = isDev
     ? 'http://localhost:3000'
     : `file://${path.join(__dirname, '../build/index.html#')}`;  // as use hashrouter
 
+  console.log(settings)
+
   log.info(startURL);
   mainWindow.loadURL(startURL)
-    .then(() => { mainWindow.webContents.send('sendSettings', settings); })
+    .then(() => { mainWindow.webContents.send('settings', settings); })
     .then(() => mainWindow.show())
   return mainWindow
   //mainWindow.on('closed', () => (mainWindow = null));
@@ -121,14 +125,10 @@ app.whenReady().then(() => {
   log.info("storagePath is:")
   log.info(storagePath)
 
-  log.info("globals path:")
-  log.info(global.GlobalJSONPath);
-
   jsonfile.writeFileSync(storagePath, settingsDefaults)
 });
 
 app.on('window-all-closed', () => {
   //fs.unlinkSync('globals.json');
-  fs.unlinkSync(global.GlobalJSONPath);
   if (process.platform !== 'darwin') app.quit()
 });
