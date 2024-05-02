@@ -51,6 +51,7 @@ function createWindow() {
 
   // IPC works for all formats, except mac prod, for mac prod, save JSON to userData and have hard coded path to get from other side
   // not ideal, but not other way to send data or access app. from renderer.
+  console.log(path.join(app.getPath("userData"), "settings.json"))
   fs.writeFileSync(path.join(app.getPath("userData"), "settings.json"), JSON.stringify(settings));
 
   let mainWindow = new BrowserWindow({

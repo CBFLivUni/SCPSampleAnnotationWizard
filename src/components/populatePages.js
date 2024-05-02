@@ -1,8 +1,7 @@
 import path from 'path';
 import log from 'electron-log'
 const fs = require('fs');
-
-console.log(window.process.env.USER)
+const isDev = processAdditionalArgs('isDev')
 const jsonfilePath = processAdditionalArgs('jsonfilePath');
 const jsonfile = require(jsonfilePath);
 var ipcRenderer = require('electron').ipcRenderer;
@@ -30,7 +29,7 @@ function getAppData () {
 	if (window.process.platform === 'darwin') {
 		appDataPath = path.join('/Users', window.process.env.USER, 'Library', 'Application Support', 'scpannotation');
 	} else if (window.process.platform === 'win32') {
-		appDataPath = path.join(window.process.env.LOCALAPPDATA, 'scpannotation');
+		appDataPath = path.join(window.process.env.LOCALAPPDATA, 'scpannotation').replace('Local', 'Roaming');
 	}
 
 	return appDataPath
@@ -64,34 +63,7 @@ export function processAdditionalArgs(key) {
 	let appDataPath = getAppData()
 
 	let settingsJSON = JSON.parse(fs.readFileSync(path.join(appDataPath, "settings.json"), "utf8"));
-		//settingsJSON = settings;
-		//console.log(settings)
-		//return settingsJSON[key]
-		//console.log(settingsJSON)
-	//}); 
-	//let settings = JSON.parse(fs.readFileSync("globals.json", "utf8"));
 
 	return settingsJSON[key]
 	
-	/*
-	let argString;
-	// find arg that begins with ARG|
-	for (var i = argv.length; i--;){
-		if (argv[i].startsWith("ARGS|")){
-			argString = argv[i];
-		}
-	}
-	let argArray = argString.split('|');
-
-	let processedJSON = {};
-
-	for (var i = 0; i < argArray.length; i++) {
-		if(argArray[i] !== 'ARGS') {
-			let strSplit = argArray[i].split('-');
-			processedJSON[strSplit[0]] = strSplit[1]
-		}
-	}
-
-	return processedJSON;
-	*/
 }
