@@ -4,6 +4,8 @@ import FormControl from '@mui/material/FormControl';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
+import path from 'path';
+import log from 'electron-log'
 
 import Item from '../components/Item';
 
@@ -44,7 +46,8 @@ function ImportError() {
   let currVars = getValuesToPopulatePage(storagePath);
 
   // show errors from log file
-  let logFilePath = currVars.form['output-path'] + "\\scpannotationwizard.log"
+  let logFilePath = path.join(currVars.form['output-path'], "scpannotationwizard.log");
+  console.log(currVars);
 
   const fs = module.constructor._load('fs');
   let fullLog = fs.readFileSync(logFilePath, 'utf8')
@@ -69,7 +72,7 @@ function ImportError() {
                     <Item>
                       <h2>Errors on Imports</h2>
                       <p>Errors saved to 'scpannotationwizard.log' at:</p>
-                      <p>{currVars.private['output-path-tag']}</p>
+                      <p>{currVars.form['output-path']}</p>
                       {(() => {
                         if (errorText !== '') {
                           return (

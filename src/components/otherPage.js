@@ -119,9 +119,15 @@ function OtherPage() {
           pythonProcess = spawnSync(path.join(__dirname, '..', '..', '..', '..', '..', '..', 'processing/processing.exe'), [storagePath, "analysis"]);
         }
       } else {
-        console.log("processing.exe path is:")
-        console.log(path.join(__dirname, '..', 'processing/processing.exe'));
-        let pythonProcess = spawnSync(path.join(__dirname, '..', 'processing/processing.exe'), [storagePath, "analysis"]);
+        if (platform === 'darwin') {
+          // mac prod
+          let pythonProcess = spawnSync(path.join(__dirname, '..', 'processing', 'processing_f').replace(/ /g, '\\ '), [storagePath, "analysis"], {shell: true});
+        } else {
+          // windows prod
+          console.log("processing.exe path is:")
+          console.log(path.join(__dirname, '..', 'processing/processing.exe'));
+          let pythonProcess = spawnSync(path.join(__dirname, '..', 'processing/processing.exe'), [storagePath, "analysis"]);
+        }
       }
 
       if (typeof(pythonProcess) === 'undefined') {

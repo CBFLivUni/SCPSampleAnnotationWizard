@@ -2,6 +2,7 @@ import { handleChangePF } from './processForm';
 import path from 'path';
 import { changePage } from './handlePageChange';
 import { processAdditionalArgs } from './populatePages';
+import log from 'electron-log';
 const { spawnSync } = require('node:child_process');
 const isDev = processAdditionalArgs('isDev');
 const platform = processAdditionalArgs('platform');
@@ -156,22 +157,44 @@ function getDataFromImports(storagePath, store) {
 		let pythonProcess;
 		if (platform === 'darwin') {
 			// mac dev
-			pythonProcess = spawnSync(path.join(__dirname, '..', '..', '..', '..', '..', '..', '..', '..', 'processing/processing'), [storagePath, "processimport"]);
+			pythonProcess = spawnSync(path.join(__dirname, '..', '..', '..', '..', '..', '..', '..', '..', 'processing', 'processing'), [storagePath, "processimport"]);
 		} else {
 			// windows dev
 			console.log(__dirname)
-			console.log(path.join(__dirname, '..', '..', '..', '..', '..', '..', 'processing/processing.exe'));
-			console.log(path.join(__dirname, '..', 'processing/processing.exe'));
-			pythonProcess = spawnSync(path.join(__dirname, '..', '..', '..', '..', '..', '..', 'processing/processing.exe'), [storagePath, "processimport"]);
+			console.log(path.join(__dirname, '..', '..', '..', '..', '..', '..', 'processing', 'processing.exe'));
+			console.log(path.join(__dirname, '..', 'processing', 'processing.exe'));
+			pythonProcess = spawnSync(path.join(__dirname, '..', '..', '..', '..', '..', '..', 'processing', 'processing.exe'), [storagePath, "processimport"]);
 		}
 		console.log(pythonProcess.stderr);
 		return pythonProcess.stderr;
 	} else {
-		console.log("processing.exe path is:")
-		console.log(path.join(__dirname, '..', 'processing/processing.exe'));
-		let pythonProcess = spawnSync(path.join(__dirname, '..', 'processing/processing.exe'), [storagePath, "processimport"]);
-		console.log(pythonProcess.stderr);
-		return pythonProcess.stderr
+		if (platform === 'darwin') {
+			// mac prod
+			console.log("processing.exe path is:")
+			console.log(path.join(__dirname, '..', 'app.asar', 'processing', 'processing'));
+			console.log(fs.readdirSync(path.join(__dirname, '..', 'app.asar', 'processing')))
+			
+			const { StringDecoder } = require('node:string_decoder');
+			const decoder = new StringDecoder('utf8');
+
+			// TODO currently will fail in "scpannotation 2" and so on, cwd may be solution, spaces cause issues that escaping chars won't fix
+			// shell must be true mac prod
+			let pythonProcess = spawnSync(path.join(__dirname, '..', 'processing', 'processing_f').replace(/ /g, '\\ '), [storagePath, "processimport"], {shell: true});
+			//let pythonProcess = spawnSync('processing_f', [storagePath, "processimport"], {shell: false, cwd: path.resolve(__dirname, '..', 'processing')});
+
+			console.log(path.join(__dirname, '..', 'processing', 'processing_f').replace(/ /g, '\\ '));
+			console.log(decoder.write(pythonProcess.stdout));
+			console.log(decoder.write(pythonProcess.stderr));
+			
+			return pythonProcess.stderr
+		} else {
+			// windows prod
+			console.log("processing.exe path is:")
+			console.log(path.join(__dirname, '..', 'processing', 'processing.exe'));
+			let pythonProcess = spawnSync(path.join(__dirname, '..', 'processing', 'processing.exe'), [storagePath, "processimport"]);
+			console.log(pythonProcess.stderr);
+			return pythonProcess.stderr
+		}
 	}
 }
 
@@ -180,6 +203,9 @@ export function handleProcessImports(storagePath, store) {
 
 	// set cursor to waiting
 	document.body.style.cursor  = 'wait';
+
+	console.log('jsonfilepath')
+	console.log(jsonfilePath);
 
 	// write path for output if it doesn't exist
 	let currSettings = jsonfile.readFileSync(storagePath)
@@ -195,6 +221,7 @@ export function handleProcessImports(storagePath, store) {
 	// run python script to update json
 	let stderr = getDataFromImports(storagePath, store)
 	console.log(stderr)
+	log.info(stderr)
 	//if stderr exists. i.e. error with import, go straight to output page to view errors
 	if (stderr.length !== 0){
 		// set cursor to normal

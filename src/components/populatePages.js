@@ -1,17 +1,23 @@
 import path from 'path';
 import log from 'electron-log'
 const fs = require('fs');
+
+console.log(window.process.env.USER)
 const jsonfilePath = processAdditionalArgs('jsonfilePath');
 const jsonfile = require(jsonfilePath);
-
 var ipcRenderer = require('electron').ipcRenderer;
 // watch for data being sent when window open and writing settings to file
-ipcRenderer.on('settings', (event, settings) => { writeSettings (settings); });
+log.initialize();
+log.info('log working')
+ipcRenderer.on('settings', (event, settings) => {
+	log.info(settings);
+	console.log(settings);
+	writeSettings(settings);
+});
 //const jsonfile = require(path.join(__dirname, '../app.asar/node_modules/jsonfile'));
 //const jsonfile = require('jsonfile');
 
 // on page load, current settings are returned so can be accessed as js vars in page
-
 export function getValuesToPopulatePage(storagePath) {
 	//console.log(window.process.argv)
 	let formSettings = jsonfile.readFileSync(storagePath)
@@ -19,10 +25,23 @@ export function getValuesToPopulatePage(storagePath) {
 	return(formSettings);
 }
 
+function getAppData () {
+	let appDataPath;
+	if (window.process.platform === 'darwin') {
+		appDataPath = path.join('/Users', window.process.env.USER, 'Library', 'Application Support', 'scpannotation');
+	} else if (window.process.platform === 'win32') {
+		appDataPath = path.join(window.process.env.LOCALAPPDATA, 'scpannotation');
+	}
+
+	return appDataPath
+}
+
 function writeSettings (settings) {
 	// runs once when app starts.
 	// write to json, where can be accessed by renderer, if written in main can't necessarily get path correct
-	fs.writeFileSync("globals.json", JSON.stringify(settings))
+	let appDataPath = getAppData()
+
+	fs.writeFileSync(path.join(appDataPath, "settings.json"), JSON.stringify(settings))
 }
 
 export function processAdditionalArgs(key) {
@@ -40,7 +59,11 @@ export function processAdditionalArgs(key) {
 	//	settingsJSON = settings;
 	//})
 
-	let settingsJSON = JSON.parse(fs.readFileSync("globals.json", "utf8"));
+	// mac prod ipc not working
+	// manually find user data path
+	let appDataPath = getAppData()
+
+	let settingsJSON = JSON.parse(fs.readFileSync(path.join(appDataPath, "settings.json"), "utf8"));
 		//settingsJSON = settings;
 		//console.log(settings)
 		//return settingsJSON[key]

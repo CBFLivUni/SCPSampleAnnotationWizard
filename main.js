@@ -4,15 +4,11 @@
 import electron, { app, BrowserWindow, ipcMain } from 'electron'
 import store from 'electron-json-storage';
 import log from 'electron-log'
-//import log from 'electron-log/main';
 import os from 'os';
-//import electron from 'electron';
 import { dirname } from 'path';
 import path from 'path';
 import { fileURLToPath } from 'url';
-//const isDev = require('electron-is-dev');
 import isDev from 'electron-is-dev'
-//import * as fs from 'fs';
 import jsonfile from 'jsonfile'
 import { settingsDefaults} from './src/components/storeDefaults.js'
 import fs from 'fs';
@@ -21,24 +17,19 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 // set path for file storage, send to all processes
 
-// put this in path next to asar. not in, cannot access if in
-var storagePath = isDev
-  ? path.join(app.getAppPath('userData'), 'data.json')
-  : path.join(app.getAppPath('userData'), '..', 'data.json');
-
-// in production need to leave app.asar to write globals.
-// TO DO check this is ok on windows, as seemed ok before on windows.
-
-// can't even pass round path of globals.json consistently as having mac production issues, so set this as a global
-// bit horrible, but not the worst thing in the world. otherwise just can't handle reading the correct file path
-// without knowing isDev, platform etc. which can't do in renderer processes, no other paths are consistent
-// across main and renderer.
-//global.GlobalJSONPath = path.join(__dirname, 'globals.json')
+var storagePath;
+if (isDev){
+  // dev
+  storagePath = path.join(app.getAppPath('userData'), 'data.json');
+} else {
+  // prod
+  storagePath = path.join(app.getAppPath('userData'), '..', 'data.json');
+}
 
 // in production jsonfile cannot be found for some reason (other modules can) so give path
 var jsonfilePath = isDev
   ? 'jsonfile'
-  : path.join(__dirname, '../app.asar/node_modules/jsonfile');
+  : path.join(__dirname, '..', 'app.asar', 'node_modules', 'jsonfile');
 
 var outputPath = app.getPath('documents');
 
@@ -52,25 +43,15 @@ function createWindow() {
   jsonfilePath = jsonfilePath.replace(/\\/g, '\\\\'); // escape backslashes
   outputPath = outputPath.replace(/\\/g, '\\\\'); // escape backslashes
 
-  //fs.writeFileSync('globals.js', 'ARGS' + '|storagePath-' + storagePath + '|jsonfilePath-' + jsonfilePath + '|isDev-' + isDev.toString() + '|outputPath-' + outputPath + '|platform-' + process.platform.toString())
-
   let settings = {"storagePath": storagePath,
                   "jsonfilePath": jsonfilePath,
                   "isDev": isDev.toString(),
                   "outputPath": outputPath,
                   "platform": process.platform.toString()};
 
-  //var settingsString = JSON.stringify(settings);
-
-  console.log(settings)
-
-  //fs.writeFileSync(global.GlobalJSONPath, settingsString);
-  //fs.writeFileSync('globals.json', settingsString);  // working on everything other than mac prod
-
-  // in dev this works 
-  //log.info(global.GlobalJSONPath);
-  //fs.writeFileSync(path.join('globals.json'), settingsString);
-  log.info(path.join(__dirname, 'preload.js'))
+  // IPC works for all formats, except mac prod, for mac prod, save JSON to userData and have hard coded path to get from other side
+  // not ideal, but not other way to send data or access app. from renderer.
+  fs.writeFileSync(path.join(app.getPath("userData"), "settings.json"), JSON.stringify(settings));
 
   let mainWindow = new BrowserWindow({
     width: 800,
@@ -81,9 +62,6 @@ function createWindow() {
       nodeIntegration: true,
       contextIsolation: false,
       enableRemoteModule: true,
-      // pass some paths and check if dev to all processes. must be string, that is parsed later
-      //additionalArguments: ['ARGS' + '|storagePath-' + storagePath + '|jsonfilePath-' + jsonfilePath + '|isDev-' + isDev.toString() + '|outputPath-' + outputPath + '|platform-' + process.platform.toString()]  // pass some paths and check if dev to all processes.
-      //preload: path.join(__dirname, 'preload.js')
     },
   });
   //mainWindow.webContents.openDevTools()
@@ -129,6 +107,5 @@ app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', () => {
-  //fs.unlinkSync('globals.json');
   if (process.platform !== 'darwin') app.quit()
 });
