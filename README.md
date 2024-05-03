@@ -58,7 +58,7 @@ Makes executable for Windows and MacOS.
 ### For Mac
 - For Mac production build, following `npm run make`, unzip output file, then `processing` file generated from `pyinstaller` needs to be copied to `scpannotation.app/Contents/Resources/processing/`.
 - Permissions of `processing` must also be set so is executable by user. Otherwise, file isn't executable within app.asar.
-- `scpannotation.app` and `/processing/README.xlsx` can then be zipped together and distributed.
+- `scpannotation.app` can be renamed 'SCPSampleAnnotationWizard' (spaces in title aren't recommended), favicon added, then zipped together with `/processing/README.xlsx` for distribution.
 
 ### For Windows
 - Check file paths of `inno/scpannotator.iss`.
