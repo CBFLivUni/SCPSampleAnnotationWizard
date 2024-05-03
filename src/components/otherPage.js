@@ -121,7 +121,7 @@ function OtherPage() {
       } else {
         if (platform === 'darwin') {
           // mac prod
-          let pythonProcess = spawnSync(path.join(__dirname, '..', 'processing', 'processing_f').replace(/ /g, '\\ '), [storagePath, "analysis"], {shell: true});
+          let pythonProcess = spawnSync(path.join(__dirname, '..', 'processing', 'processing').replace(/ /g, '\\ '), [storagePath, "analysis"], {shell: true});
         } else {
           // windows prod
           console.log("processing.exe path is:")

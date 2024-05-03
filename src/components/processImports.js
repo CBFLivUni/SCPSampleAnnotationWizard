@@ -179,10 +179,10 @@ function getDataFromImports(storagePath, store) {
 
 			// TODO currently will fail in "scpannotation 2" and so on, cwd may be solution, spaces cause issues that escaping chars won't fix
 			// shell must be true mac prod
-			let pythonProcess = spawnSync(path.join(__dirname, '..', 'processing', 'processing_f').replace(/ /g, '\\ '), [storagePath, "processimport"], {shell: true});
-			//let pythonProcess = spawnSync('processing_f', [storagePath, "processimport"], {shell: false, cwd: path.resolve(__dirname, '..', 'processing')});
+			let pythonProcess = spawnSync(path.join(__dirname, '..', 'processing', 'processing').replace(/ /g, '\\ '), [storagePath, "processimport"], {shell: true});
+			//let pythonProcess = spawnSync('processing', [storagePath, "processimport"], {shell: false, cwd: path.resolve(__dirname, '..', 'processing')});
 
-			console.log(path.join(__dirname, '..', 'processing', 'processing_f').replace(/ /g, '\\ '));
+			console.log(path.join(__dirname, '..', 'processing', 'processing').replace(/ /g, '\\ '));
 			console.log(decoder.write(pythonProcess.stdout));
 			console.log(decoder.write(pythonProcess.stderr));
 			
