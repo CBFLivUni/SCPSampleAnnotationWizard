@@ -1,6 +1,4 @@
 // electron.js
-//const { app, BrowserWindow } = require('electron');
-//const path = require('path');
 import electron, { app, BrowserWindow, ipcMain } from 'electron'
 import store from 'electron-json-storage';
 import log from 'electron-log'

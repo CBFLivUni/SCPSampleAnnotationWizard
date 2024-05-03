@@ -1,17 +1,29 @@
 # SCP Sample Annotation Wizard
 
+# User Information
+
 - Generates sample annotation .csv files to be passed to the colData argument in the readSCP() function from the [scp R package](https://uclouvain-cbio.github.io/scp/index.html)
-- Written in Electron JS + React
+
+- Download Mac and Windows releases [here](https://github.com/CBFLivUni/SCPSampleAnnotationWizard/releases)
+
+# Developer Information
+
+- Written using Electron JS + React, pricessing script in Python.
+
+### Processing script
+
+- Create virtual env using your preferred method using `requirements.txt`.
 
 `pip install pyinstaller`
 
 `pyinstaller -F processingpy/processing.py`
 
+For Windows:
 `mv processingpy/processing.exe processing`
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Available Scripts
+## ElectronJS + React Scripts
 
 In the project directory, you can run:
 
@@ -19,6 +31,7 @@ In the project directory, you can run:
 
 Runs the app in the development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Note: may run incorrectly in browser due to Node JS requirements, check Electron window for correct output.
 
 The page will reload when you make changes.\
 You may also see any lint errors in the console.
@@ -41,3 +54,12 @@ See the section about [deployment](https://facebook.github.io/create-react-app/d
 ### `npm run make`
 
 Makes executable for Windows and MacOS.
+
+### For Mac
+- For Mac production build, following `npm run make`, unzip output file, then `processing` file generated from `pyinstaller` needs to be copied to `scpannotation.app/Contents/Resources/processing/`.
+- Permissions of `processing` must also be set so is executable by user. Otherwise, file isn't executable within app.asar.
+- `scpannotation.app` and `/processing/README.xlsx` can then be zipped together and distributed.
+
+### For Windows
+- Check file paths of `inno/scpannotator.iss`.
+- `inno/scpannotator.iss` can then be used with [Inno Setup](https://jrsoftware.org/isinfo.php) to create a Windows installer.
