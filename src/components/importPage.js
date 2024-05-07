@@ -71,7 +71,6 @@ function ImportPage() {
     // sanitise task name so is safe as folder
 
     const regex = /^[a-z0-9]+$/i;
-    console.log(regex.test(value))
     if (value === '' || regex.test(value)) {
       setText(value);
 

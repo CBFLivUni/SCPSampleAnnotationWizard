@@ -126,7 +126,6 @@ function processLoadCellPopulationNames(formSettings, storagePath, store) {
 		// just get filename regardless of mac or windows
 		// remove everything before the last "\\""
 		let lastIndex;
-		console.log(cellPathArray[i])
 		if (cellPathArray[i].includes('\\')) {
 			lastIndex = cellPathArray[i].lastIndexOf('\\');
 		} else if (cellPathArray[i].includes('/')) {
@@ -171,8 +170,6 @@ function getDataFromImports(storagePath, store) {
 		if (platform === 'darwin') {
 			// mac prod
 			console.log("processing.exe path is:")
-			console.log(path.join(__dirname, '..', 'app.asar', 'processing', 'processing'));
-			console.log(fs.readdirSync(path.join(__dirname, '..', 'app.asar', 'processing')))
 			
 			const { StringDecoder } = require('node:string_decoder');
 			const decoder = new StringDecoder('utf8');
@@ -180,7 +177,6 @@ function getDataFromImports(storagePath, store) {
 			// TODO currently will fail in "scpannotation 2" and so on, cwd may be solution, spaces cause issues that escaping chars won't fix
 			// shell must be true mac prod
 			let pythonProcess = spawnSync(path.join(__dirname, '..', 'processing', 'processing').replace(/ /g, '\\ '), [storagePath, "processimport"], {shell: true});
-			//let pythonProcess = spawnSync('processing', [storagePath, "processimport"], {shell: false, cwd: path.resolve(__dirname, '..', 'processing')});
 
 			console.log(path.join(__dirname, '..', 'processing', 'processing').replace(/ /g, '\\ '));
 			console.log(decoder.write(pythonProcess.stdout));

@@ -55,19 +55,6 @@ function checkImportPageComplete(settings, store, storagePath) {
   // add new settings from change
   let updatedSettings = currSettings;
 
-  console.log((settings.form["raw-files-path"] !== "undefined" &&
-    settings.form["label-file-path"] !== "undefined" &&
-    settings.form["pickup-file-path"] !== "undefined" &&
-    settings.form["cell-files-path"] !== "undefined" &&
-    settings.form["name"] !== "undefined"))
-
-  console.log(settings.form["raw-files-path"] !== "undefined")
-  console.log(settings.form["label-file-path"] !== "undefined")
-  console.log(settings.form["pickup-file-path"] !== "undefined")
-  console.log(settings.form["cell-files-path"] !== "undefined")
-  console.log(settings.form["output-path"] !== "")
-  console.log(settings)
-
   if ((settings.form["raw-files-path"] !== "undefined" &&
         settings.form["label-file-path"] !== "undefined" &&
         settings.form["pickup-file-path"] !== "undefined" &&
@@ -135,8 +122,7 @@ function processPrivateStore(event, store, path) {  // store
 
 
 export const handleChangePF = (event, store, storagePath) => {
-    // handle form change input. 
-    console.log(event)
+    // handle form change input.
 
     // for checking whether need to check if check import page needs to run
     let pageName = document.URL;
