@@ -16,10 +16,12 @@
 
 `pip install pyinstaller`
 
-`pyinstaller -F processingpy/processing.py`
-
 For Windows:
+`pyinstaller -F processingpy/processing.py`
 `mv processingpy/processing.exe processing`
+
+For Mac:
+`pyinstaller processingpy/processing.py`
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
@@ -56,7 +58,7 @@ See the section about [deployment](https://facebook.github.io/create-react-app/d
 Makes executable for Windows and MacOS.
 
 ### For Mac
-- For Mac production build, following `npm run make`, unzip output file, then `processing` file generated from `pyinstaller` needs to be copied to `scpannotation.app/Contents/Resources/processing/`.
+- For Mac production build, following `npm run make`, unzip output file, then contents of `dist/processing` generated from `pyinstaller` needs to be copied to `scpannotation.app/Contents/Resources/processing/`.
 - Permissions of `processing` must also be set so is executable by user. Otherwise, file isn't executable within app.asar.
 - `scpannotation.app` can be renamed 'SCPSampleAnnotationWizard' (spaces in title aren't recommended), favicon added, then zipped together with `/processing/README.xlsx` for distribution.
 
