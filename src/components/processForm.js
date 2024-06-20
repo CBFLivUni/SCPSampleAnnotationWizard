@@ -33,7 +33,13 @@ function getValuePath(event, storagePath) {
 
       // if output folder, then just need folder, not file
       let folderPath = event.target.files[0].path
-      let lastIndex = folderPath.lastIndexOf('\\');
+      console.log(folderPath)
+      var lastIndex;
+      if (folderPath.includes('\\')){
+        lastIndex = folderPath.lastIndexOf('\\');
+      } else {
+        lastIndex = folderPath.lastIndexOf('/');
+      }
       real_path = folderPath.substr(0, lastIndex)
 
     } else {
@@ -142,7 +148,8 @@ export const handleChangePF = (event, store, storagePath) => {
 
       formKey = event.target.name
       formVal = processImportPaths(event, pTag, storagePath)
-
+      console.log(formVal)
+      console.log(formKey)
       // add p tag changes to private store
       privateVal = formVal;
       privateKey = pTag;

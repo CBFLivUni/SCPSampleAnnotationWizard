@@ -307,7 +307,7 @@ try:
 			full_rows = []
 
 			try:
-				with open(pickup_path) as pickup_csv:
+				with open(pickup_path, encoding="Windows-1252") as pickup_csv:
 					rd = csv.reader(pickup_csv, delimiter=delimiter, quotechar='"')
 					for row in rd:
 						# if any elements are empty then don't keep row, or not 3 cols
