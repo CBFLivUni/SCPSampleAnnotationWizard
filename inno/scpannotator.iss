@@ -13,4 +13,4 @@ Source: "...\scpannotation\processing\README.xlsx"; DestDir: "{app}"; Flags: isr
 Source: "....\favicon\favicon_wiz.ico"; DestDir: "{app}";
 
 [Icons]
-Name: "{group}\SCP Sample Annotation Wizard"; Filename: "{app}\scpannotation-1.0.0 Setup.exe"; IconFilename:"{app}\favicon_wiz.ico";
+Name: "{group}\SCP Sample Annotation Wizard"; Filename: "{app}\scpannotation-0.1.0 Setup.exe"; IconFilename:"{app}\favicon_wiz.ico";

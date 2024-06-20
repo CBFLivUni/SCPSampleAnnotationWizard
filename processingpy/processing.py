@@ -9,9 +9,10 @@ import matplotlib.pyplot as plt
 import math
 import json
 import logging
+import re
 
 """
-run processing of data from UI imports, based o 'CellenONE_ImportSinglePickup_AR.m'
+run processing of data from UI imports, based on 'CellenONE_ImportSinglePickup_AR.m'
 """
 
 # adaption of CellenONE_ImportSinglePickup.m
@@ -28,7 +29,7 @@ try:
 	# get user_data_path as arg
 	user_data_path = sys.argv[1]
 	#user_data_path = r"..\scpannotation\data.json"
- 	# user_data_path = r"/Users/aroths/Documents/SCPSampleAnnotationWizard/data.json"
+ 	# user_data_path = r"C:\Users\alexr\OneDrive\Documents\Work\CBF\Emmott_Annotation\Application\scpannotation\data.json"
 
 	# either 'processimport', 'full'
 	analysis = sys.argv[2]
@@ -51,6 +52,12 @@ try:
 	meta_to_include = user_data['form']['meta-to-include']
 	column_mismatches = user_data['form']['column-mismatches']
 	label_missing = user_data['form']['label-missing-data']
+	row_regex = user_data['form']['row-regex']
+	col_regex = user_data['form']['col-regex']
+	pickup_type = user_data['form']['pickup-type']
+	offset = user_data['form']['offset']
+	tech = user_data['form']['tech-type']
+
 
 	# set up logging asap
 	logging.basicConfig(filename= os.path.join(output_path, "scpannotationwizard.log"), level=logging.INFO)
@@ -67,10 +74,13 @@ try:
 		logging.info(cell_files)
 		for i, f in enumerate(cell_files):
 			if f.endswith('csv'):
-				f_df = pd.read_csv(f)
+				f_df = pd.read_csv(f, sep=",")
+			elif f.endswith('.xls'):
+					# '.xls' files straight from the machine are actually tsv's with xls extension.
+					f_df = pd.read_csv(f, sep="\t").dropna(axis='columns')
 			else:
-				logging.error("Check '" + str(f) + "' is valid .csv as Cell File")
-				sys.exit("Check '" + str(f) + "' is valid .csv as Cell File")
+				logging.error("Check '" + str(f) + "' is valid .csv or .xls Cell File")
+				sys.exit("Check '" + str(f) + "' is valid .csv or .xls Cell File")
 			curr_cols = [c.strip() for c in list(f_df.columns)]  # strip any whitespace
 			columns = columns + curr_cols
 			# parse string regardless of platform
@@ -94,6 +104,29 @@ try:
 		logging.info("Adding column mismatches to show to JSON")
 		logging.info("Cols and headers : " + str(f_to_col))
 
+		# get example raw file name
+		if rawfile_p_f == 'folder':
+
+			# get raw files
+			raw_files = []
+
+			for f in os.listdir(rawfile_path):
+				if f.endswith(".raw"):
+					example_raw_file = f
+					break  # end loop once found a suitable example raw file
+
+		elif rawfile_p_f == 'csv':
+
+			# expects first col needs to be data, second aquistime, as in README template
+			try:
+				raw_files_df = pd.read_csv(rawfile_path)
+				example_raw_file = raw_files_df.iloc[0, 0]
+			except FileNotFoundError as e:
+				logging.error("Check '" + str(rawfile_path) + "' is valid Raw File Import .csv, see README.xlsx for guidance")
+				sys.exit("Check '" + str(rawfile_path) + "' is valid Raw File Import .csv, see README.xlsx for guidance")
+
+		user_data['private']['example-raw-f'] = example_raw_file
+
 		with open(user_data_path, "w") as write_file:
 			json.dump(user_data, write_file)
 
@@ -108,49 +141,49 @@ try:
 			if col['checked'] == True:
 				cols_to_include.append(col['name'])
 
-		if well_to_tmt_mapping == "default":
-			# find path of default csv
-			if getattr(sys, 'frozen', False):
-				# get path of pyinstaller.exe
-				# If the application is run as a bundle, the PyInstaller bootloader
-				# extends the sys module by a flag frozen=True and sets the app 
-				# path into variable _MEIPASS'.
-				dir_path = os.path.dirname(sys.executable)
+		if tech == "tmt":
+			if well_to_tmt_mapping == "default":
+				# find path of default csv
+				if getattr(sys, 'frozen', False):
+					# get path of pyinstaller.exe
+					# If the application is run as a bundle, the PyInstaller bootloader
+					# extends the sys module by a flag frozen=True and sets the app 
+					# path into variable _MEIPASS'.
+					dir_path = os.path.dirname(sys.executable)
+				else:
+					dir_path = os.path.dirname(os.path.abspath(__file__))
+				logging.info('processing.exe path: ' + dir_path)
+				try:
+					tmt_mapping_xl = pd.read_csv(os.path.join(dir_path, 'WelltoTMTmappingDefault.csv'))
+				except FileNotFoundError as e:
+					logging.error("Default file '" + str(tmt_mapping_path) + "' not found report to development team")
+					sys.exit("Default file '" + str(tmt_mapping_path) + "' not found report to development team")
+
 			else:
-				dir_path = os.path.dirname(os.path.abspath(__file__))
-			logging.info('processing.exe path: ' + dir_path)
-			try:
-				tmt_mapping_xl = pd.read_csv(os.path.join(dir_path, 'WelltoTMTmappingDefault.csv'))
-			except FileNotFoundError as e:
-				logging.error("Default file '" + str(tmt_mapping_path) + "' not found report to development team")
-				sys.exit("Default file '" + str(tmt_mapping_path) + "' not found report to development team")
+				try:
+					tmt_mapping_xl = pd.read_csv(tmt_mapping_path)
+				except FileNotFoundError as e:
+					logging.error("Check '" + str(tmt_mapping_path) + "' is valid Well to TMT mapping .csv, see README.xlsx for guidance")
+					sys.exit("Check '" + str(tmt_mapping_path) + "' is valid Well to TMT mapping .csv, see README.xlsx for guidance")
 
-		else:
-			# get user path.
-			try:
-				tmt_mapping_xl = pd.read_csv(tmt_mapping_path)
-			except FileNotFoundError as e:
-				logging.error("Check '" + str(tmt_mapping_path) + "' is valid Well to TMT mapping .csv, see README.xlsx for guidance")
-				sys.exit("Check '" + str(tmt_mapping_path) + "' is valid Well to TMT mapping .csv, see README.xlsx for guidance")
+			# convert nan to string, easier to deal with
+			tmt_mapping_xl = tmt_mapping_xl.fillna("NaN")
 
-		# convert nan to string, easier to deal with
-		tmt_mapping_xl = tmt_mapping_xl.fillna("NaN")
+			tmt_mapping = {}
 
-		tmt_mapping = {}
+			# create dict mapping, if multiple values per key, then turn into list, so can be looped over later
+			for idx, row in tmt_mapping_xl.iterrows():
+				if row['Well'] in tmt_mapping.keys():
 
-		# create dict mapping, if multiple values per key, then turn into list, so can be looped over later
-		for idx, row in tmt_mapping_xl.iterrows():
-			if row['Well'] in tmt_mapping.keys():
+					# turn to list if not already list
+					if type(tmt_mapping[row['Well']]) is list:
+						tmt_mapping[row['Well']].append(row['TMT'])
 
-				# turn to list if not already list
-				if type(tmt_mapping[row['Well']]) is list:
-					tmt_mapping[row['Well']].append(row['TMT'])
+					else:
+						tmt_mapping[row['Well']] = [tmt_mapping[row['Well']], row['TMT']]
 
 				else:
-					tmt_mapping[row['Well']] = [tmt_mapping[row['Well']], row['TMT']]
-
-			else:
-				tmt_mapping[row['Well']] = row['TMT']
+					tmt_mapping[row['Well']] = row['TMT']
 
 		# return the form data to the user, not the private data, that is used for the app
 		user_settings = user_data['form']
@@ -202,15 +235,16 @@ try:
 		pickup_well = []
 
 		for idx, row in raw_files_df.iterrows():
-			curr_col = int(row['RawFileName'].split("_C")[1].split("_")[0])
+			curr_col = int(re.search(col_regex, row['RawFileName']).group(1))
 			new_col = string.ascii_uppercase[curr_col-1]  # new col is alphabetical
 
-			new_row = str(int(row['RawFileName'].split("_R")[1].split("_")[0]))  # new row is just int
+			new_row = str(int(re.search(row_regex, row['RawFileName']).group(1)))  # new row is just int
 			pickup_well.append(new_col + new_row)
 
 		raw_files_df['PickupWell'] = pickup_well
 
 		if labels_path.endswith('.fld'):
+			# also digest path for if doing label free analysis
 			# process as fld
 			# csv module better for reading dodgy text files
 			# only keep rows which contain full values
@@ -244,6 +278,7 @@ try:
 				
 				else:
 					curr_ypos = int(row['ypos'])
+					print(curr_ypos)
 
 					# if current ypos is less than previous, then onto the next field.
 					if curr_ypos < prev_ypos:
@@ -261,21 +296,27 @@ try:
 			sys.exit("Labels file must be .fld")
 
 		# pickup file processing
-		if pickup_path.endswith('.csv'):
+		if pickup_path.endswith(('.csv', '.log')):
+			# both csv and log file can be open this way, even though uses csv reader
+			# just different delimiter
+			if pickup_path.endswith('.csv'):
+				delimiter = ","
+			elif pickup_path.endswith('.log'):
+				delimiter = "\t"
 		
 			full_rows = []
 
 			try:
 				with open(pickup_path) as pickup_csv:
-					rd = csv.reader(pickup_csv, delimiter=",", quotechar='"')
+					rd = csv.reader(pickup_csv, delimiter=delimiter, quotechar='"')
 					for row in rd:
 						# if any elements are empty then don't keep row, or not 3 cols
 						# only keep if first 10 ele's in list arne't empty.
 						if all([r != '' for r in row[:11]]):
 							full_rows.append(row[:11])
 			except FileNotFoundError as e:
-				logging.error("Check '" + str(pickup_path) + "' is valid pickup .csv, see README.xlsx for guidance")
-				sys.exit("Check '" + str(pickup_path) + "' is valid pickup .csv, see README.xlsx for guidance")
+				logging.error("Check '" + str(pickup_path) + "' is valid pickup .csv or .log, see README.xlsx for guidance")
+				sys.exit("Check '" + str(pickup_path) + "' is valid pickup .csv or .log, see README.xlsx for guidance")
 
 			pickup_df = pd.DataFrame(full_rows, columns = ['Time', 'Plate','Plate_Pos','Nozzle',
 														'Well','Target','Level','Field','Drops',
@@ -288,21 +329,40 @@ try:
 
 			pickup_df = pickup_df[pickup_df['Field'].isin(legit_field_val)]
 			pickup_df = pickup_df.apply(pd.to_numeric, errors='ignore')
+			# handle dual pickup
+			# same pickup values again + offset on XPos, and +2 chars on Well ie. (A1 -> C1)
+			if pickup_type == "dual":
+				dual_pickup_df = pickup_df.copy()
+				dual_pickup_df['XPos'] += int(offset)
+				# + 2 chars in index of current chars and include row
+				dual_pickup_df['Well'] = dual_pickup_df['Well'].map(lambda x: string.ascii_letters[string.ascii_letters.index(x[0]) + 2] + x[1:])
+				pickup_df = pd.concat([pickup_df, dual_pickup_df])
+
 		else:
-			logging.error("Pickup file must be .csv")
-			sys.exit("Pickup file must be .csv")
+			logging.error("Pickup file must be .csv or .log")
+			sys.exit("Pickup file must be .csv or .log")
 			
 		# process cell files
-		# just reading csv's, then concatenating, assumes that indexes for cell_files and cell_names is the same
+		# just reading files, then concatenating, assumes that indexes for cell_files and cell_names is the same
 
 		cell_files_list = []
 
 		for i, f in enumerate(cell_files):
 			try:
-				f_df = pd.read_csv(f)
+				if f.endswith('.csv'):
+					f_df = pd.read_csv(f, sep=",")
+
+				elif f.endswith('.xls'):
+					# '.xls' files straight from the machine are actually tsv's with xls extension.
+					f_df = pd.read_csv(f, sep="\t").dropna(axis='columns')
+
+				# will already have thrown error during processing imports if there's an error with cell files, so don't 
+				# need to check if file type is anything other than these.
 			except FileNotFoundError:
-				logging.error("Cell files must be .csv")
-				sys.exit("Cell files must be .csv")
+				logging.error("Cell files must be .csv or .xls")
+				sys.exit("Cell files must be .csv or .xls")
+			# some of the test files had trailing whitespace in the column names which caused issues, remove
+			f_df = f_df.rename(columns=lambda x: x.strip())
 			f_df['CellType'] = cell_names[i]
 			f_df['CellSortFile'] = f
 			cell_files_list.append(f_df)
@@ -336,6 +396,12 @@ try:
 		pickup_y = []
 		pickup_plate = []
 		pickup_well = []
+
+		# sometimes label file points to coords that were not actually used, keep only fields that were actually used from labels file
+		# assumes whole fields are always used and empties are controls
+		field_used = pickup_df['Field'].unique()
+		# note uses lowercase "field" which is from labels file
+		merged_table_df = merged_table_df[merged_table_df['field'].isin(field_used)]
 
 		for idx, row in merged_table_df.iterrows():
 
@@ -413,15 +479,17 @@ try:
 
 		# then format channels to match SCP package
 		# match well to tmt mapping name, using TMT mapping file
-		tmtRInames = []
-		for idx, row in merged_table_df.iterrows():
-			if row['well'] is np.nan:
-				tmtRInames.append(np.nan)
-			else:
-				tmtRInames.append(tmt_mapping[row['well']])
+		if tech == "tmt":
+			tmtRInames = []
+			for idx, row in merged_table_df.iterrows():
+				if row['well'] is np.nan:
+					tmtRInames.append(np.nan)
+				else:
+					tmtRInames.append(tmt_mapping[row['well']])
 
-		# just call Channel here, as that is what is ultimately formatted as
-		merged_table_df['Channel'] = tmtRInames
+			# TODO IF LABEL DON'T KNOW WHAT CHANNEL SHOULD BE SET AS?
+			# just call Channel here, as that is what is ultimately formatted as
+			merged_table_df['Channel'] = tmtRInames
 
 		# add new row for each RawFile
 		unique_raw_files = merged_table_df['RawFileName'].unique()
@@ -442,33 +510,44 @@ try:
 
 			for row in extra_rows:
 
-				# throw exception if extra row does not have TMT mapping
-				try:
-					tmt_mapping[row]
-				except KeyError as e:
-					logging.error("Extra row : '" + row + "' does not have a TMT mapping. Each extra row \
-		must also contain a mapping in the TMT mapping file")
-					raise Exception("Extra row : '" + row + "' does not have a TMT mapping. Each extra row \
-		must also contain a mapping in the TMT mapping file")
-					sys.exit(e)
+				# if tmt, then add Channel as well
+				if tech == "tmt":
 
-				# if multiple values to a mapping, then it's an array, so loop over, else is just str
-				if type(tmt_mapping[row]) is str:
-					row_for_df = {'RawFileName': file,
-							'MSAquisDateTime': aquis_date_time,
-							'CellType': row,
-							'Channel': tmt_mapping[row]}
-					
-					extra_rows_df = pd.concat([extra_rows_df, pd.DataFrame(row_for_df, index=[0])])
-				
-				elif type(tmt_mapping[row]) is list:
-					for ele in tmt_mapping[row]:
+				# throw exception if extra row does not have TMT mapping
+					try:
+						tmt_mapping[row]
+					except KeyError as e:
+						logging.error("Extra row : '" + row + "' does not have a TMT mapping. Each extra row \
+			must also contain a mapping in the TMT mapping file")
+						raise Exception("Extra row : '" + row + "' does not have a TMT mapping. Each extra row \
+			must also contain a mapping in the TMT mapping file")
+						sys.exit(e)
+
+					# if multiple values to a mapping, then it's an array, so loop over, else is just str
+					if type(tmt_mapping[row]) is str:
 						row_for_df = {'RawFileName': file,
-							'MSAquisDateTime': aquis_date_time,
-							'CellType': row,
-							'Channel': ele}
-				
+								'MSAquisDateTime': aquis_date_time,
+								'CellType': row,
+								'Channel': tmt_mapping[row]}
+						
 						extra_rows_df = pd.concat([extra_rows_df, pd.DataFrame(row_for_df, index=[0])])
+					
+					elif type(tmt_mapping[row]) is list:
+						for ele in tmt_mapping[row]:
+							row_for_df = {'RawFileName': file,
+								'MSAquisDateTime': aquis_date_time,
+								'CellType': row,
+								'Channel': ele}
+					
+							extra_rows_df = pd.concat([extra_rows_df, pd.DataFrame(row_for_df, index=[0])])
+						
+				else:
+					# if label free, then don't add channel
+					row_for_df = {'RawFileName': file,
+								'MSAquisDateTime': aquis_date_time,
+								'CellType': row}
+					extra_rows_df = pd.concat([extra_rows_df, pd.DataFrame(row_for_df, index=[0])])
+
 				
 		# add extra rows to df
 		final_df = pd.concat([merged_table_df, extra_rows_df])

@@ -85,6 +85,16 @@ function ImportPage() {
     }
   }
 
+  const [LabelInputName, setLabelName] = React.useState("Labels file");
+
+  function handleTechChange(e) {
+    if (e.target.value === "tmt") {
+      setLabelName("Labels file")
+    } else {
+      setLabelName("Label free input file (placeholder)")
+    }
+  }
+
   return(
     <div className="App">
           <header className="App-header">
@@ -92,7 +102,29 @@ function ImportPage() {
             <FormControl
             onChange={(event) => handleChangePF(event, store, storagePath)}>
               <Box sx={{ flexGrow: 1 }}>
-                <Grid container direction="column" className="outer-grid-layout" spacing={1}>
+                  <Grid container direction="column" className="outer-grid-layout" spacing={1}>
+                  <Grid item>
+                  <Item>
+                  <Tooltip 
+                          TransitionComponent={Zoom}
+                          title="Select the technology used to generate data"
+                          arrow placement="top">
+                      <Stack direction="row" alignItems= "center" spacing={2}>
+                            <h2 className='import_first_col'>Technology used</h2>
+                          <FormLabel style={{'marginLeft': '0px'}} id="raw-files-csv-or-folder-label"></FormLabel>
+                          <RadioGroup
+                            aria-labelledby="raw-files-csv-or-folder-label"
+                            defaultValue={currVars.form["tech-type"]}
+                            name="tech-type"
+                            className='import_second_col'>
+                            <FormControlLabel onChange={handleTechChange} value="tmt" control={<Radio />} label="TMT" />
+                            <FormControlLabel onChange={handleTechChange} value="label-free" control={<Radio />} label="Label-free" />
+                          </RadioGroup>
+                          </Stack>
+                      </Tooltip>
+                  </Item>
+                  </Grid>
+
                   <Grid item>
                     <Item>
                           <Tooltip 
@@ -137,7 +169,7 @@ function ImportPage() {
                     title="Import .fld file"
                     arrow placement="top">
                       <Stack direction="row" alignItems= "center" spacing={2}>
-                              <h2 className='import_first_col'>Labels file</h2>
+                              <h2 className='import_first_col'>{LabelInputName}</h2>
                             <br/>
                             <div className='import_second_col' style={{'marginLeft': '16px'}}></div>
                             <Button
@@ -162,7 +194,7 @@ function ImportPage() {
                     <Item>
                     <Tooltip
                     TransitionComponent={Zoom}
-                    title="Import .csv file"
+                    title="Import .log file or .log converted to csv"
                     arrow placement="top">
                       <Stack direction="row" alignItems= "center" spacing={2}>
                               <h2 className='import_first_col' >Pickup file</h2>
@@ -189,7 +221,7 @@ function ImportPage() {
                   <Grid item>
                     <Item>
                     <Tooltip
-                    title="Import as many .csv cell files as desired"
+                    title="Import as many cell files as desired in .xls format, or converted to .csv"
                     TransitionComponent={Zoom}
                     arrow placement="top">
                       <Stack direction="row" alignItems= "center" spacing={2}>

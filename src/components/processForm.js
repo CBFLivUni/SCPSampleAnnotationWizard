@@ -123,6 +123,7 @@ function processPrivateStore(event, store, path) {  // store
 
 export const handleChangePF = (event, store, storagePath) => {
     // handle form change input.
+    console.log(event)
 
     // for checking whether need to check if check import page needs to run
     let pageName = document.URL;
@@ -290,6 +291,36 @@ export const handleChangePF = (event, store, storagePath) => {
       privateVal = formVal;
       privateKey = pTag;
 
+    } else if (event.target.name === "col-regex") {
+      formKey = event.target.name
+      formVal = event.target.value
+
+    } else if (event.target.name === "row-regex") {
+      formKey = event.target.name
+      formVal = event.target.value
+
+    } else if (event.target.name === "offset-disabled") {
+      console.log(event)
+      privateKey = event.target.name
+      privateVal = event.target.value
+
+      // if offset is disabled, then single pickup must have been selected
+      if (privateVal === true) {
+        formVal = 'single';
+        formKey = "pickup-type";
+
+      } else {
+        formVal = 'dual';
+        formKey = "pickup-type";
+
+      }
+    } else if (event.target.name === "offset") {
+      formKey = event.target.name
+      formVal = event.target.value
+
+    } else if (event.target.name === "tech-type") {
+      formKey = event.target.name
+      formVal = event.target.value
     }
 
     // read current form settings
