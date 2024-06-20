@@ -6,6 +6,8 @@
 
 - Download Mac and Windows releases [here](https://github.com/CBFLivUni/SCPSampleAnnotationWizard/releases)
 
+- Download read me [here](https://github.com/CBFLivUni/SCPSampleAnnotationWizard/blob/main/processing/README.xlsx)
+
 # Developer Information
 
 - Written using Electron JS + React, pricessing script in Python.
