@@ -15,6 +15,5 @@
 "1G9,",Reporter.intensity.13
 Carrier,Reporter.intensity.1
 Reference,Reporter.intensity.2
-Empty,Reporter.intensity.3
-Empty,Reporter.intensity.4
-Control,
+,Reporter.intensity.3
+,Reporter.intensity.4

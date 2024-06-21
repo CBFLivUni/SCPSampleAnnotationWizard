@@ -167,7 +167,7 @@ try:
 					sys.exit("Check '" + str(tmt_mapping_path) + "' is valid Well to TMT mapping .csv, see README.xlsx for guidance")
 
 			# convert nan to string, easier to deal with
-			tmt_mapping_xl = tmt_mapping_xl.fillna("NaN")
+			tmt_mapping_xl = tmt_mapping_xl.fillna(label_missing)
 
 			tmt_mapping = {}
 
@@ -278,7 +278,6 @@ try:
 				
 				else:
 					curr_ypos = int(row['ypos'])
-					print(curr_ypos)
 
 					# if current ypos is less than previous, then onto the next field.
 					if curr_ypos < prev_ypos:
