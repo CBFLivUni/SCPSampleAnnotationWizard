@@ -6,7 +6,9 @@
 
 - Download Mac and Windows releases [here](https://github.com/CBFLivUni/SCPSampleAnnotationWizard/releases)
 
-- Download read me [here](https://github.com/CBFLivUni/SCPSampleAnnotationWizard/blob/main/processing/README.xlsx)
+- Download Read Me [here](https://github.com/CBFLivUni/SCPSampleAnnotationWizard/blob/main/processing/README.xlsx)
+
+    - MacOS users: Ensure that the application is moved to Applications folder, otherwise the loaded files won't be able to be accessed.
 
 # Developer Information
 
