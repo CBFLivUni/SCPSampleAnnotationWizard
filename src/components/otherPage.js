@@ -363,7 +363,7 @@ function OtherPage() {
                     <Item>
                         <Tooltip
                         TransitionComponent={Zoom}
-                        title="Add extra rows per raw file"
+                        title="Add extra rows per raw file, in addition to the labels given to missing data defined above"
                         arrow placement="top">
                       <Stack direction="row" alignItems= "center" spacing={2}>
                         <h2 display="inline">Add extra rows per raw file</h2>

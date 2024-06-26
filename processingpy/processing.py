@@ -87,13 +87,16 @@ try:
 			if "/" in f:
 				f_to_col[f.split("/")[-1]] = curr_cols
 			elif "\\" in f:
-				 f_to_col[f.split("\\")[-1]] = curr_cols
+				f_to_col[f.split("\\")[-1]] = curr_cols
 
 		unique_cols = list(set(columns))
-		
+
 		# default cols, plus cell file cols
 		unique_cols.sort()  # sort alphabetically
-		cols_to_show = ['RawFileName', 'Channel', 'CellType'] + unique_cols
+		if tech == "tmt":
+			cols_to_show = ['RawFileName', 'Channel', 'CellType'] + unique_cols
+		else :
+			cols_to_show = ['RawFileName', 'CellType'] + unique_cols
 
 		# add to json
 		user_data['private']['meta-data-array'] = cols_to_show
@@ -106,9 +109,6 @@ try:
 
 		# get example raw file name
 		if rawfile_p_f == 'folder':
-
-			# get raw files
-			raw_files = []
 
 			for f in os.listdir(rawfile_path):
 				if f.endswith(".raw"):
@@ -476,17 +476,30 @@ try:
 		# Join that table with rawfiles
 		merged_table_df = merged_table_df.merge(raw_files_df, on='PickupWell', how="inner")
 
+		# TMT labels cycle through from every pickup well set. So sort in order that picked up and add labelling offset depending on well and field
+		merged_table_df['field_pickupwell'] = merged_table_df['Field'].astype(str) + "_" + merged_table_df['PickupWell'].astype(str)
+		merged_table_df['field_pickupwell'] = merged_table_df['field_pickupwell'].replace("nan_nan", np.NaN)
+		merged_table_df['labelling_offset'] = pd.factorize(merged_table_df['field_pickupwell'], use_na_sentinel=np.NaN)[0].astype(int)
+		merged_table_df['labelling_offset'] = merged_table_df['labelling_offset'].replace(-1, np.NaN)
+
 		# then format channels to match SCP package
-		# match well to tmt mapping name, using TMT mapping file
+		# match well to tmt mapping name, using TMT mapping file and include the offset that changes per set
 		if tech == "tmt":
 			tmtRInames = []
 			for idx, row in merged_table_df.iterrows():
-				if row['well'] is np.nan:
-					tmtRInames.append(np.nan)
-				else:
-					tmtRInames.append(tmt_mapping[row['well']])
+				first_set_well = row['well']
+				first_set_row = int(first_set_well[2:][:-1])  ## just keep row, not plate or col
+				curr_set_row = first_set_row + row['labelling_offset']
 
-			# TODO IF LABEL DON'T KNOW WHAT CHANNEL SHOULD BE SET AS?
+				# if curr_set_row above max rows that exist, 18, then will return to the start, but starts from 4
+				if curr_set_row > 14:
+					curr_set_row = curr_set_row - 14 + 4
+				
+				curr_set_well = first_set_well[:2] + str(curr_set_row) + first_set_well[-1]
+
+				tmtRInames.append(tmt_mapping[curr_set_well])
+
+			# TODO IF LABEL FREE DON'T KNOW WHAT CHANNEL SHOULD BE SET AS?
 			# just call Channel here, as that is what is ultimately formatted as
 			merged_table_df['Channel'] = tmtRInames
 
@@ -551,8 +564,40 @@ try:
 		# add extra rows to df
 		final_df = pd.concat([merged_table_df, extra_rows_df])
 
+		# if any reporters, not accounted for per rawfile, then add as missing value (usually control)
+		# assumes all reporters are always used across files, but sometimes may be specific in mapping csv
+		if tech == "tmt":
+
+			missing_reporter_rows_df = pd.DataFrame(columns=merged_table_df.columns)
+
+			unique_reporters = tmt_mapping_xl['TMT'].unique()
+
+			for r in unique_raw_files:
+				df_for_raw = final_df[final_df['RawFileName'] == r]
+
+				aquis_date_time = df_for_raw['MSAquisDateTime'].values[0]
+
+				# get reporters that aren't currently present for that raw file 
+				missing_for_raw = list(set(unique_reporters).difference(df_for_raw['Channel']))
+
+				if len(missing_for_raw) != 0:
+					for rep in missing_for_raw:
+
+						row_for_df = {'RawFileName': r,
+								'MSAquisDateTime': aquis_date_time,
+								'CellType': label_missing,
+								'Channel': rep}
+						
+						missing_reporter_rows_df = pd.concat([missing_reporter_rows_df, pd.DataFrame(row_for_df, index=[0])])
+
+			# add extra rows to df
+			final_df = pd.concat([final_df, missing_reporter_rows_df])
+
 		# then final table cleanup
-		final_df = final_df.sort_values(by=['RawFileName', 'Channel'])
+		if tech == "tmt":
+			final_df = final_df.sort_values(by=['RawFileName', 'Channel'])
+		else:
+			final_df = final_df.sort_values(by=['RawFileName'])
 
 		# only keep columns you need
 		final_df = final_df[cols_to_include]
