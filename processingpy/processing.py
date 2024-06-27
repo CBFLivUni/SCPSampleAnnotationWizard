@@ -476,28 +476,12 @@ try:
 		# Join that table with rawfiles
 		merged_table_df = merged_table_df.merge(raw_files_df, on='PickupWell', how="inner")
 
-		# TMT labels cycle through from every pickup well set. So sort in order that picked up and add labelling offset depending on well and field
-		merged_table_df['field_pickupwell'] = merged_table_df['Field'].astype(str) + "_" + merged_table_df['PickupWell'].astype(str)
-		merged_table_df['field_pickupwell'] = merged_table_df['field_pickupwell'].replace("nan_nan", np.NaN)
-		merged_table_df['labelling_offset'] = pd.factorize(merged_table_df['field_pickupwell'], use_na_sentinel=np.NaN)[0].astype(int)
-		merged_table_df['labelling_offset'] = merged_table_df['labelling_offset'].replace(-1, np.NaN)
-
 		# then format channels to match SCP package
 		# match well to tmt mapping name, using TMT mapping file and include the offset that changes per set
 		if tech == "tmt":
 			tmtRInames = []
 			for idx, row in merged_table_df.iterrows():
-				first_set_well = row['well']
-				first_set_row = int(first_set_well[2:][:-1])  ## just keep row, not plate or col
-				curr_set_row = first_set_row + row['labelling_offset']
-
-				# if curr_set_row above max rows that exist, 18, then will return to the start, but starts from 4
-				if curr_set_row > 14:
-					curr_set_row = curr_set_row - 14 + 4
-				
-				curr_set_well = first_set_well[:2] + str(curr_set_row) + first_set_well[-1]
-
-				tmtRInames.append(tmt_mapping[curr_set_well])
+				tmtRInames.append(tmt_mapping[row['well']])
 
 			# TODO IF LABEL FREE DON'T KNOW WHAT CHANNEL SHOULD BE SET AS?
 			# just call Channel here, as that is what is ultimately formatted as
