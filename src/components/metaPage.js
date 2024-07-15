@@ -111,6 +111,7 @@ function MetaPage() {
                       <FormGroup id="meta-form" >
                         <h2>Metadata to Include</h2>
                       {currVars.form['meta-to-include'].map(function(object, i){
+                                  console.log(currVars.form['meta-to-include'][i]['checked'])
                                   return<FormControlLabel control={<Checkbox defaultChecked={currVars.form['meta-to-include'][i]['checked']} />} disabled={currVars.form['meta-to-include'][i]['disabled']}
                                   label={currVars.form['meta-to-include'][i]['name']} name={'change-meta'}/>;
                                 })}

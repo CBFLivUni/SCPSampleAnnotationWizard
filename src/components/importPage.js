@@ -91,7 +91,7 @@ function ImportPage() {
     if (e.target.value === "tmt") {
       setLabelName("Labels file")
     } else {
-      setLabelName("Label free input file (placeholder)")
+      setLabelName("Droplet location file")
     }
   }
 
@@ -117,7 +117,7 @@ function ImportPage() {
                             defaultValue={currVars.form["tech-type"]}
                             name="tech-type"
                             className='import_second_col'>
-                            <FormControlLabel onChange={handleTechChange} value="tmt" control={<Radio />} label="TMT" />
+                            <FormControlLabel onChange={handleTechChange} value="tmt" control={<Radio />} label="Label-based" />
                             <FormControlLabel onChange={handleTechChange} value="label-free" control={<Radio />} label="Label-free" />
                           </RadioGroup>
                           </Stack>
@@ -166,7 +166,7 @@ function ImportPage() {
                     <Item>
                     <Tooltip
                     TransitionComponent={Zoom}
-                    title="Import .fld file"
+                    title="Import .fld file - e.g. for label free, DMSO dispense file"
                     arrow placement="top">
                       <Stack direction="row" alignItems= "center" spacing={2}>
                               <h2 className='import_first_col'>{LabelInputName}</h2>

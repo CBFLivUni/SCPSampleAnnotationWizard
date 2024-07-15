@@ -306,6 +306,10 @@ export const handleChangePF = (event, store, storagePath) => {
       formKey = event.target.name
       formVal = event.target.value
 
+    } else if (event.target.name === "well-regex") {
+      formKey = event.target.name
+      formVal = event.target.value
+
     } else if (event.target.name === "offset-disabled") {
       console.log(event)
       privateKey = event.target.name

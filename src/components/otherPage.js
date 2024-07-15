@@ -155,16 +155,19 @@ function OtherPage() {
   // set a switch for checking if regex is valid which changes when
   var rowValid = "valid"
   var colValid = "valid"
+  var wellValid = "valid"
 
-  const [colRegexOutput, setColRegexText] = React.useState(createInitialColRegexText);
-  const [rowRegexOutput, setRowRegexText] = React.useState(createInitialRowRegexText);
+  //const [colRegexOutput, setColRegexText] = React.useState(createInitialColRegexText);
+  //const [rowRegexOutput, setRowRegexText] = React.useState(createInitialRowRegexText);
+  const [wellRegexOutput, setWellRegexText] = React.useState(createInitialWellRegexText);
   const [finishEnable, setFinishEnable] = React.useState(InitialFinishDisable);
   const [finishButtonText, setFinishText] = React.useState(InitialFinishText);
 
   // only enable finish button if regex isn't returning no matches or error
   function InitialFinishDisable() {
     // both rowValid and colValid switches are true, enable button else disable
-    if (rowValid === "valid" && colValid === "valid"){
+    //if (rowValid === "valid" && colValid === "valid"){
+    if(wellValid === "valid"){
       return false
     } else {
       return true
@@ -228,6 +231,14 @@ function OtherPage() {
     }
   }
 
+  function createInitialWellRegexText() {
+    let e = {target:{value: currVars.form["well-regex"]}};
+    var exampleOutput = processRegex(e)
+    var message = exampleOutput[1]
+    rowValid = exampleOutput[0]  // set global
+
+    return message
+  }
 
   function createInitialRowRegexText() {
     let e = {target:{value: currVars.form["row-regex"]}};
@@ -248,23 +259,13 @@ function OtherPage() {
     return message
   }
 
-
-  function processRowRegex(e) {
+  function processWellRegex(e) {
     var exampleOutput = processRegex(e)
     var message = exampleOutput[1]
     rowValid = exampleOutput[0]  // set global
 
     checkFinishEnable()
-    setRowRegexText(message)
-  }
-
-  function processColRegex(e) {
-    var exampleOutput = processRegex(e)
-    var message = exampleOutput[1]
-    colValid = exampleOutput[0]  // set global
-
-    checkFinishEnable()
-    setColRegexText(message)
+    setWellRegexText(message)
   }
 
   const [disableOffset, setOffsetDisable] = React.useState(getInitialOffsetState);
@@ -304,25 +305,17 @@ function OtherPage() {
                       <Item>
                               <Tooltip
                               TransitionComponent={Zoom}
-                              title="Edit regex if column and row names are not correctly extracted from raw filename"
+                              title="Edit regex if well name is not correctly extracted from raw filename"
                               arrow placement="top">
                                 <Stack direction="row" justifyContent= "flex-end" spacing={2}>
                                 <p className="p_tag_import"><b>Example file:</b> {currVars.private["example-raw-f"]}</p>
                                 </Stack>
                         <Stack direction="row" alignItems= "center" spacing={2}>
-                                <h2>Regex to extract row</h2>
-                                <TextField defaultValue={currVars.form["row-regex"]}
-                                  name='row-regex'
-                                  onChange={processRowRegex}/>
-                                <p className="p_tag_import"><b>Example output:</b> {rowRegexOutput}</p>
-                        </Stack>
-                        <br/>
-                        <Stack direction="row" alignItems= "center" spacing={2}>
-                                <h2>Regex to extract col</h2>
-                                <TextField defaultValue={currVars.form["col-regex"]}
-                                  name='col-regex'
-                                  onChange={processColRegex}/>
-                                <p className="p_tag_import"><b>Example output:</b> {colRegexOutput}</p>
+                                <h2>Regex to extract well</h2>
+                                <TextField defaultValue={currVars.form["well-regex"]}
+                                  name='well-regex'
+                                  onChange={processWellRegex}/>
+                                <p className="p_tag_import"><b>Example output:</b> {wellRegexOutput}</p>
                         </Stack>
                               </Tooltip>
                     </Item>
@@ -398,11 +391,11 @@ function OtherPage() {
                       }}>
                     <Item>
                           <Tooltip
-                          title="Choose the mapping of well to TMT file see README for more info"
+                          title="Choose the mapping of well to Label file see README for more info"
                           TransitionComponent={Zoom}
                           arrow placement="top">
                       <Stack direction="row" alignItems= "center" spacing={2}>
-                            <h2>Well to TMT mapping CSV</h2>
+                            <h2>Well to Label mapping CSV</h2>
                           <FormLabel id="well-to-tmt-mapping-label"></FormLabel>
                           <RadioGroup
                             aria-labelledby="well-to-tmt-mapping-label"

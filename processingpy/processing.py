@@ -52,8 +52,7 @@ try:
 	meta_to_include = user_data['form']['meta-to-include']
 	column_mismatches = user_data['form']['column-mismatches']
 	label_missing = user_data['form']['label-missing-data']
-	row_regex = user_data['form']['row-regex']
-	col_regex = user_data['form']['col-regex']
+	well_regex = user_data['form']['well-regex']
 	pickup_type = user_data['form']['pickup-type']
 	offset = user_data['form']['offset']
 	tech = user_data['form']['tech-type']
@@ -154,18 +153,20 @@ try:
 					dir_path = os.path.dirname(os.path.abspath(__file__))
 				logging.info('processing.exe path: ' + dir_path)
 				try:
-					tmt_mapping_xl = pd.read_csv(os.path.join(dir_path, 'WelltoTMTmappingDefault.csv'))
+					tmt_mapping_xl = pd.read_csv(os.path.join(dir_path, 'WelltoLabelmappingDefault.csv'))
 				except FileNotFoundError as e:
-					logging.error("Default file '" + str(tmt_mapping_path) + "' not found report to development team")
-					sys.exit("Default file '" + str(tmt_mapping_path) + "' not found report to development team")
+					logging.error("Default file '" + str(os.path.join(dir_path, 'WelltoLabelmappingDefault.csv')) + "' not found report to development team")
+					sys.exit("Default file '" + str(os.path.join(dir_path, 'WelltoLabelmappingDefault.csv')) + "' not found report to development team")
 
 			else:
 				try:
 					tmt_mapping_xl = pd.read_csv(tmt_mapping_path)
 				except FileNotFoundError as e:
-					logging.error("Check '" + str(tmt_mapping_path) + "' is valid Well to TMT mapping .csv, see README.xlsx for guidance")
-					sys.exit("Check '" + str(tmt_mapping_path) + "' is valid Well to TMT mapping .csv, see README.xlsx for guidance")
+					logging.error("Check '" + str(tmt_mapping_path) + "' is valid Well to Label mapping .csv, see README.xlsx for guidance")
+					sys.exit("Check '" + str(tmt_mapping_path) + "' is valid Well to Label mapping .csv, see README.xlsx for guidance")
 
+			# if additional rows on csv that are empty, then delete them to ensure not filled
+			tmt_mapping_xl = tmt_mapping_xl.dropna(axis = 0, how = 'all')
 			# convert nan to string, easier to deal with
 			tmt_mapping_xl = tmt_mapping_xl.fillna(label_missing)
 
@@ -177,13 +178,13 @@ try:
 
 					# turn to list if not already list
 					if type(tmt_mapping[row['Well']]) is list:
-						tmt_mapping[row['Well']].append(row['TMT'])
+						tmt_mapping[row['Well']].append(row['Label'])
 
 					else:
-						tmt_mapping[row['Well']] = [tmt_mapping[row['Well']], row['TMT']]
+						tmt_mapping[row['Well']] = [tmt_mapping[row['Well']], row['Label']]
 
 				else:
-					tmt_mapping[row['Well']] = row['TMT']
+					tmt_mapping[row['Well']] = row['Label']
 
 		# return the form data to the user, not the private data, that is used for the app
 		user_settings = user_data['form']
@@ -235,11 +236,9 @@ try:
 		pickup_well = []
 
 		for idx, row in raw_files_df.iterrows():
-			curr_col = int(re.search(col_regex, row['RawFileName']).group(1))
-			new_col = string.ascii_uppercase[curr_col-1]  # new col is alphabetical
-
-			new_row = str(int(re.search(row_regex, row['RawFileName']).group(1)))  # new row is just int
-			pickup_well.append(new_col + new_row)
+			# get well from raw file name
+			new_well = str(re.search(well_regex, row['RawFileName']).group(1))
+			pickup_well.append(new_well)
 
 		raw_files_df['PickupWell'] = pickup_well
 
@@ -456,18 +455,18 @@ try:
 
 			# plot real pos's
 			plt.scatter(merged_table_df[merged_table_df['Field'] == field]['XPos'],
-							merged_table_df[merged_table_df['Field'] == field]['YPos'],
+							-merged_table_df[merged_table_df['Field'] == field]['YPos'],
 							c='red')
 
 			# plot pickup pos
 			plt.scatter(merged_table_df[merged_table_df['Field'] == field]['PickupXpos'],
-						merged_table_df[merged_table_df['Field'] == field]['PickupYpos'],
+						-merged_table_df[merged_table_df['Field'] == field]['PickupYpos'],
 						c='black')
 			
 			# plot lines between pickup and real pos
 			for idx, row in merged_table_df[merged_table_df['Field'] == field].iterrows():
 				plt.plot([row['PickupXpos'], row['XPos']],
-						[row['PickupYpos'], row['YPos']],
+						[-row['PickupYpos'], -row['YPos']],
 						c='black')
 			
 		plt.tight_layout()
@@ -513,10 +512,10 @@ try:
 					try:
 						tmt_mapping[row]
 					except KeyError as e:
-						logging.error("Extra row : '" + row + "' does not have a TMT mapping. Each extra row \
-			must also contain a mapping in the TMT mapping file")
-						raise Exception("Extra row : '" + row + "' does not have a TMT mapping. Each extra row \
-			must also contain a mapping in the TMT mapping file")
+						logging.error("Extra row : '" + row + "' does not have a Label mapping. Each extra row \
+			must also contain a mapping in the Label mapping file")
+						raise Exception("Extra row : '" + row + "' does not have a Label mapping. Each extra row \
+			must also contain a mapping in the Label mapping file")
 						sys.exit(e)
 
 					# if multiple values to a mapping, then it's an array, so loop over, else is just str
@@ -554,7 +553,7 @@ try:
 
 			missing_reporter_rows_df = pd.DataFrame(columns=merged_table_df.columns)
 
-			unique_reporters = tmt_mapping_xl['TMT'].unique()
+			unique_reporters = tmt_mapping_xl['Label'].unique()
 
 			for r in unique_raw_files:
 				df_for_raw = final_df[final_df['RawFileName'] == r]

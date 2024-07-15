@@ -100,9 +100,10 @@ function processMetadataToInclude(formSettings, storagePath, store) {
 			//defChecked = true;  // checked by default
 			checked = true;  // for consistency with processForm.js, whether it ends up checked
 		} else {
+			// by default Ed now wants all checked
 			disabled = false;
 			//defChecked = false;
-			checked = false;
+			checked = true;
 		}
 
 		// add to array

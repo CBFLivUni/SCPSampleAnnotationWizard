@@ -1,4 +1,4 @@
-﻿Well,TMT
+﻿Well,Label
 "1G1,",Reporter.intensity.5
 "1G10,",Reporter.intensity.14
 "1G11,",Reporter.intensity.15
@@ -15,5 +15,5 @@
 "1G9,",Reporter.intensity.13
 Carrier,Reporter.intensity.1
 Reference,Reporter.intensity.2
-,Reporter.intensity.3
-,Reporter.intensity.4
+Empty,Reporter.intensity.3
+Empty,Reporter.intensity.4
