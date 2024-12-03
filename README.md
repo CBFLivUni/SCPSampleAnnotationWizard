@@ -14,7 +14,7 @@
 
 - Written using Electron JS + React, pricessing script in Python.
 
-### Processing script
+### Processing script and CLI
 
 - Create virtual env using your preferred method using `requirements.txt`.
 
@@ -26,6 +26,8 @@ For Windows:
 
 For Mac:
 `pyinstaller processingpy/processing.py`
+
+and repeat for `processingpy/scpw.py`
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
