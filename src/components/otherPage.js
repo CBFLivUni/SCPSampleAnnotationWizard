@@ -45,7 +45,7 @@ function OtherPage() {
 
   // if label-free then hide "well to TMT mapping csv"
   var displayMapping
-  if (currVars.form["tech-type"] == "tmt") {
+  if (currVars.form["tech-type"] === "tmt") {
     displayMapping = "inline";
   } else {
     displayMapping = "none";
@@ -68,6 +68,138 @@ function OtherPage() {
     const newRows = [...rows]
     newRows.splice(index, 1)
     setRows(newRows)
+  }
+
+  
+  const [hideRowReg, setHideRowReg] = React.useState(getInitialRowRegState);
+  const [hideColReg, setHideColReg] = React.useState(getInitialColRegState);
+
+  function getInitialRowRegState() {
+    if (currVars.form["invert-row"] === "true"){
+      return "flex"
+    } else {
+      return "none"
+    }
+  }
+
+  function getInitialColRegState() {
+    if (currVars.form["invert-col"] === "true"){
+      return "flex"
+    } else {
+      return "none"
+    }
+  }
+
+  function rowFinishCondition() {
+
+    // can't check constant as it's not updated in time
+    // so check current state and which one was updated.
+    let rowValid = checkRowRegexValid()
+    let hideReg = getValueRowRadio()
+
+    // only stop progression of finish if row regex is invalid and visible
+    if (rowValid !== "valid" && hideReg === "true"){
+      return false
+    } else {
+      return true
+    }
+  }
+
+  function colFinishCondition() {
+
+    // can't check constant as it's not updated in time
+    // so check current state and which one was updated.
+    let colValid = checkColRegexValid();
+    let hideReg = getValueColRadio();
+
+    // only stop progression of finish if column regex is invalid and visible
+    if (colValid !== "valid" && hideReg === "true"){
+      return false
+    } else {
+      return true
+    }
+  }
+
+  function getValueColRadio() {
+    // get value of column radio button
+
+    let val_col;
+    document.getElementsByName("invert-col").forEach(function(radio) {
+      if (radio.checked) {
+        if (radio.value === "true") {
+          setHideColReg("flex");
+          val_col = "true";
+        } else {
+          setHideColReg("none");
+          val_col = "false";
+        }
+      }
+    });
+    return val_col;
+  }
+
+  function getValueRowRadio() {
+    // get value of row radio button
+
+    let val_row;
+    document.getElementsByName("invert-row").forEach(function(radio) {
+      if (radio.checked) {
+        if (radio.value === "true") {
+          setHideRowReg("flex")
+          val_row = "true"
+        } else {
+          setHideRowReg("none")
+          val_row = "false"
+        }
+      }
+    });
+    return val_row;
+  }
+
+  function processRowInv() {
+    // if invert row is selected, then show row regex
+    // if not, then hide
+
+    let rowRadio = getValueRowRadio();
+
+    checkHideExampleFile()
+    checkFinishEnable()
+  }
+
+  function processColInv() {
+    // if invert column is selected, then show column regex
+    // if not, then hide
+
+    let colRadio = getValueColRadio();
+    
+    checkHideExampleFile()
+    checkFinishEnable()
+  }
+
+  const [hideExampleFile, setHideExampleFile] = React.useState(getInitialHideExampleFileP);
+  
+  function getInitialHideExampleFileP() {
+    // if row and column regex is hidden, then hide example file
+    // if not, then show
+    if (hideRowReg === "none" && hideColReg === "none"){
+      return "none"
+    } else {
+      return "flex"
+    }
+  }
+
+  function checkHideExampleFile() {
+    // if row and column regex is hidden, then hide example file
+
+    let colRadio = getValueColRadio();
+    let rowRadio = getValueRowRadio();
+
+    // if not, then show
+    if (colRadio === "false" && rowRadio === "false"){
+      setHideExampleFile("none")
+    } else {
+      setHideExampleFile("flex")
+    }
   }
 
   function processFinalCellPopulationNames(nameCellPopulations, store, storagePath) {
@@ -152,13 +284,15 @@ function OtherPage() {
     }
   }
 
-  // set a switch for checking if regex is valid which changes when
-  var rowValid = "valid"
-  var colValid = "valid"
-  var wellValid = "valid"
+  //TODO could do with a tidy up, but works for now
 
-  //const [colRegexOutput, setColRegexText] = React.useState(createInitialColRegexText);
-  //const [rowRegexOutput, setRowRegexText] = React.useState(createInitialRowRegexText);
+  // set a switch for checking if regex is valid which changes when
+  //var rowValid = "valid"
+  //var colValid = "valid"
+  //var wellValid = "valid"
+
+  const [colRegexOutput, setColRegexText] = React.useState(createInitialColRegexText);
+  const [rowRegexOutput, setRowRegexText] = React.useState(createInitialRowRegexText);
   const [wellRegexOutput, setWellRegexText] = React.useState(createInitialWellRegexText);
   const [finishEnable, setFinishEnable] = React.useState(InitialFinishDisable);
   const [finishButtonText, setFinishText] = React.useState(InitialFinishText);
@@ -167,6 +301,11 @@ function OtherPage() {
   function InitialFinishDisable() {
     // both rowValid and colValid switches are true, enable button else disable
     //if (rowValid === "valid" && colValid === "valid"){
+
+    // initially as row and col regex are hidden, only need to check well regex
+
+    let wellValid = initialProcessWellRegex()
+
     if(wellValid === "valid"){
       return false
     } else {
@@ -174,9 +313,47 @@ function OtherPage() {
     }
   }
 
+  function initialProcessWellRegex() {
+    // check initial message valid
+
+    //let e = {target:{value: currVars.form["well-regex"]}};
+    var exampleOutput = processRegex(currVars.form["well-regex"])
+    let wellValid = exampleOutput[0]
+
+    return wellValid
+  }
+
+  function initialProcessRowRegex() {
+    // check initial message valid
+
+    //let e = {target:{value: currVars.form["row-regex"]}};
+    var exampleOutput = processRegex(currVars.form["row-regex"])
+    let rowValid = exampleOutput[0]
+
+    return rowValid
+  }
+
+  function initialProcessColRegex() {
+    // check initial message valid
+
+    //let e = {target:{value: currVars.form["col-regex"]}};
+    var exampleOutput = processRegex(currVars.form["col-regex"])
+    let colValid = exampleOutput[0]
+
+    return colValid
+  }
+
+
   function checkFinishEnable() {
     // both rowValid and colValid switches are true, enable button else disable
-    if (rowValid === "valid" && colValid === "valid"){
+
+    //rowValid = processRegex({target:{value: currVars.form["row-regex"]}})[0]
+    //colValid = processRegex({target:{value: currVars.form["col-regex"]}})[0]
+    //wellValid = processRegex({target:{value: currVars.form["well-regex"]}})[0]
+
+    let wellValid = checkWellRegexValid()
+
+    if (wellValid === "valid" && rowFinishCondition() && colFinishCondition()){
       setFinishEnable(false)
       setFinishText("FINISH")
     } else {
@@ -193,12 +370,11 @@ function OtherPage() {
     }
   }
 
-  function processRegex(e) {
+  function processRegex(regex) {
     // return regex output from  both row and column regex and example file output
     // return array ["valid"/ "invalid", result]
     // if invalid, then don't allow user to click finish, else do.
     const exampleFile = currVars.private["example-raw-f"]
-    const regex = e.target.value
 
     if (regex === "") {
       // if blank, then warn no matches
@@ -233,18 +409,18 @@ function OtherPage() {
 
   function createInitialWellRegexText() {
     let e = {target:{value: currVars.form["well-regex"]}};
-    var exampleOutput = processRegex(e)
+    var exampleOutput = processRegex(currVars.form["well-regex"])
     var message = exampleOutput[1]
-    rowValid = exampleOutput[0]  // set global
+    //wellValid = exampleOutput[0]  // set global
 
     return message
   }
 
   function createInitialRowRegexText() {
     let e = {target:{value: currVars.form["row-regex"]}};
-    var exampleOutput = processRegex(e)
+    var exampleOutput = processRegex(currVars.form["row-regex"])
     var message = exampleOutput[1]
-    rowValid = exampleOutput[0]  // set global
+    //rowValid = exampleOutput[0]  // set global
 
     return message
   }
@@ -252,20 +428,95 @@ function OtherPage() {
 
   function createInitialColRegexText() {
     let e = {target:{value: currVars.form["col-regex"]}};
-    var exampleOutput = processRegex(e)
+    var exampleOutput = processRegex(currVars.form["col-regex"])
     var message = exampleOutput[1]
-    colValid = exampleOutput[0]  // set global
+    //colValid = exampleOutput[0]  // set global
 
     return message
   }
 
-  function processWellRegex(e) {
-    var exampleOutput = processRegex(e)
+  function checkRowRegexValid() {
+    // set message, and return if valid or not
+
+    let regex = document.getElementsByName('row-regex')[0].value
+
+    var exampleOutput = processRegex(regex)
+    let rowValid = exampleOutput[0]
+
+    return rowValid
+  }
+
+  function checkColRegexValid() {
+    // set message, and return if valid or not
+
+    let regex = document.getElementsByName('col-regex')[0].value
+
+    var exampleOutput = processRegex(regex)
+    let colValid = exampleOutput[0]
+
+    return colValid
+  }
+
+  function processRowRegexChange() {
+    // set the change
+
+    let regex = document.getElementsByName('row-regex')[0].value
+
+    var exampleOutput = processRegex(regex)
     var message = exampleOutput[1]
-    rowValid = exampleOutput[0]  // set global
+
+    checkFinishEnable()
+    setRowRegexText(message)
+  }
+
+  function processColRegexChange() {
+    // set message, and return if valid or not
+
+    let regex = document.getElementsByName('col-regex')[0].value
+
+    var exampleOutput = processRegex(regex)
+    var message = exampleOutput[1]
+
+    checkFinishEnable()
+    setColRegexText(message)
+  }
+
+  function checkWellRegexValid() {
+    // set message, and return if valid or not
+
+    let regex = document.getElementsByName('well-regex')[0].value
+
+    var exampleOutput = processRegex(regex)
+    let wellValid = exampleOutput[0]
+
+    return wellValid
+  }
+
+  function processWellRegexChange() {
+    // set message, and return if valid or not
+
+    let regex = document.getElementsByName('well-regex')[0].value
+
+    var exampleOutput = processRegex(regex)
+    var message = exampleOutput[1]
 
     checkFinishEnable()
     setWellRegexText(message)
+  }
+
+  function processWellRegex() {
+    // set message, and return if valid or not
+
+    let regex = document.getElementsByName('well-regex')[0].value
+
+    var exampleOutput = processRegex(regex)
+    var message = exampleOutput[1]
+    let wellValid = exampleOutput[0]  // set global
+
+    //checkFinishEnable()
+    setWellRegexText(message)
+
+    return wellValid
   }
 
   const [disableOffset, setOffsetDisable] = React.useState(getInitialOffsetState);
@@ -314,7 +565,7 @@ function OtherPage() {
                                 <h2>Regex to extract well</h2>
                                 <TextField defaultValue={currVars.form["well-regex"]}
                                   name='well-regex'
-                                  onChange={processWellRegex}/>
+                                  onChange={processWellRegexChange}/>
                                 <p className="p_tag_import"><b>Example output:</b> {wellRegexOutput}</p>
                         </Stack>
                               </Tooltip>
@@ -444,6 +695,55 @@ function OtherPage() {
                               </Tooltip>
                     </Item>
                   </Grid>
+                  <Grid item>
+                    <Item>
+                    <Tooltip
+                    TransitionComponent={Zoom}
+                    title="Select whether to invert row and column of file names"
+                    arrow placement="top">
+                      <h2>Invert Numbering</h2>
+                      <Box display={hideExampleFile} alignItems="center" justifyContent="center">
+                      <p alignItems="centre"><b>Example file:</b> {currVars.private["example-raw-f"]}</p>
+                      </Box>
+                      <Stack direction="row" alignItems= "center" spacing={2}>
+                          <FormLabel id="invert-col-label"></FormLabel>
+                          <RadioGroup
+                            aria-labelledby="invert-col-label"
+                            defaultValue={currVars.form["invert-col"]}
+                            name="invert-col">
+                            <FormControlLabel value="true" control={<Radio />} onChange={processColInv} label="Invert Column" />
+                            <FormControlLabel value="false" control={<Radio />} onChange={processColInv} label="Don't Change Column" />
+                          </RadioGroup>
+                          <Box display={hideColReg}>
+                          <Stack direction="row" spacing={2} display>
+                          <TextField defaultValue={currVars.form["col-regex"]}
+                                  name='col-regex'
+                                  onChange={processColRegexChange}/>
+                                <p className="p_tag_import"><b>Example output:</b> {colRegexOutput}</p>
+                            </Stack>
+                          </Box>
+                      </Stack>
+                        <Stack direction="row" alignItems= "center" spacing={2} display>
+                        <FormLabel id="invert-row-label"></FormLabel>
+                          <RadioGroup
+                            aria-labelledby="invert-row-label"
+                            defaultValue={currVars.form["invert-row"]}
+                            name="invert-row">
+                            <FormControlLabel value="true" control={<Radio />} onChange={processRowInv} label="Invert Row" />
+                            <FormControlLabel value="false" control={<Radio />} onChange={processRowInv} label="Don't Change Row" />
+                          </RadioGroup>
+                          <Box display={hideRowReg}>
+                          <Stack direction="row" spacing={2} display>
+                          <TextField defaultValue={currVars.form["row-regex"]}
+                            name='row-regex'
+                            onChange={processRowRegexChange}/>
+                          <p className="p_tag_import"><b>Example output:</b> {rowRegexOutput}</p>
+                          </Stack>
+                          </Box>
+                        </Stack>
+                              </Tooltip>
+                    </Item>
+                    </Grid>
                   <Grid item>
                     <Item>
                       <Stack direction="row" alignItems= "center" justifyContent="center" spacing={2}> 

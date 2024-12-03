@@ -15,6 +15,8 @@ import { handleProcessImports } from './processImports';
 import { getValuesToPopulatePage, processAdditionalArgs } from './populatePages';
 import Zoom from '@mui/material/Zoom';
 import TextField from '@mui/material/TextField';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
 
 import { Link } from "react-router-dom";
 
@@ -44,12 +46,13 @@ function ImportPage() {
   const [allowDir, setDir] = React.useState(defAllowDir);
   const [selectRawText, setRawText] = React.useState(defRawText);
 
+  const handleFolderSet = (e) => {
 
-  const handleFolderSet = () => {
+    if (e.target.value === "csv") {
 
     // when csv set only allow ind files selected
     // when folder set allow dirs to be selected
-    if (allowDir === "true") {
+    //if (allowDir === "true") {
       // as long as valid string, webkitdir will be set as true, if not valid string, then will be set as false
       // hence mixed types
       setDir(false)
@@ -85,6 +88,40 @@ function ImportPage() {
     }
   }
 
+  const [hideRadio, radioGroupDisplay] = React.useState();
+
+  function handleExtensionChange(e) {
+    // when extension changes, set value to csv and grey out folder option
+    console.log(e.target.value);
+    if (e.target.value === "raw") {
+      radioGroupDisplay();  // don't hide radio group, just use default
+
+      // as raw been selected, check what settings were before and use them
+      // horrible way to do this, can't find easier way.
+      document.getElementsByName("raw-files-group").forEach(function(radio) {
+        if (radio.checked) {
+          if (radio.value === "folder") {
+            setDir(true)
+            setRawText("Select Folder")
+          } else {
+            setDir(false)
+            setRawText("Select File")
+          }
+        }
+      });
+
+    } else {
+      // if .d then hide radio group and set csv options, ie. select one file
+      radioGroupDisplay("none");
+
+      // force making sure can only select csv
+      //setDir(false)
+      //setRawText("Select File")
+      handleFolderSet({target: {value: "csv"}})
+      
+    }
+  }
+
   const [LabelInputName, setLabelName] = React.useState("Labels file");
 
   function handleTechChange(e) {
@@ -93,6 +130,24 @@ function ImportPage() {
     } else {
       setLabelName("Droplet location file")
     }
+  }
+
+  // additional files
+
+  // TODO -  this just sets the state to blank when go back to that page, ideally would take state from json, but would need some refactoring
+  // and no validation of form filled out properly
+  // don't check that column names are already used
+  const [rows, setRows] = useState([]);
+
+  function handleSubmitER(e){
+    e.preventDefault()
+    setRows([...rows, ''])
+  }
+
+  function handleDeleteER(index){
+    const newRows = [...rows]
+    newRows.splice(index, 1)
+    setRows(newRows)
   }
 
   return(
@@ -124,7 +179,27 @@ function ImportPage() {
                       </Tooltip>
                   </Item>
                   </Grid>
-
+                  <Grid item>
+                  <Item>
+                  <Tooltip 
+                          TransitionComponent={Zoom}
+                          title="Data file extension"
+                          arrow placement="top">
+                      <Stack direction="row" alignItems= "center" spacing={2}>
+                            <h2 className='import_first_col'>Data File Extension</h2>
+                          <FormLabel style={{'marginLeft': '0px'}} id="raw-or-d-label"></FormLabel>
+                          <RadioGroup
+                            aria-labelledby="raw-or-d-label"
+                            defaultValue={currVars.form["file-format"]}
+                            name="file-format"
+                            className='import_second_col'>
+                            <FormControlLabel onClick={(e) => handleExtensionChange(e)} value="raw" control={<Radio />} label=".raw"/>
+                            <FormControlLabel onClick={(e) => handleExtensionChange(e)} value="d" control={<Radio />} label=".d" />
+                          </RadioGroup>
+                          </Stack>
+                      </Tooltip>
+                  </Item>
+                  </Grid>
                   <Grid item>
                     <Item>
                           <Tooltip 
@@ -132,15 +207,16 @@ function ImportPage() {
                           title="Import either folder containing '.raw' files or .csv formatted as in README"
                           arrow placement="top">
                       <Stack direction="row" alignItems= "center" spacing={2}>
-                            <h2 className='import_first_col'>Raw files</h2>
+                            <h2 className='import_first_col'>Data files</h2>
                           <FormLabel style={{'marginLeft': '0px'}} id="raw-files-csv-or-folder-label"></FormLabel>
                           <RadioGroup
+                            sx={{'display': hideRadio}}
                             aria-labelledby="raw-files-csv-or-folder-label"
                             defaultValue={currVars.form["raw-files-group"]}
                             name="raw-files-group"
                             className='import_second_col'>
-                            <FormControlLabel onChange={handleFolderSet} value="folder" control={<Radio />} label="Folder" />
-                            <FormControlLabel onChange={handleFolderSet} value="csv" control={<Radio />} label="CSV" />
+                            <FormControlLabel onClick={(e) => handleFolderSet(e)} value="folder" control={<Radio />} label="Folder" id='folder-radio-control'/>
+                            <FormControlLabel onClick={(e) => handleFolderSet(e)} value="csv" control={<Radio />} label="CSV"/>
                           </RadioGroup>
                           <Button
                           variant="contained"
@@ -245,6 +321,63 @@ function ImportPage() {
                             className="p_tag_import">{currVars.private["cell-files-path-tag"]}</p>
                           </Stack>
                           </Tooltip>
+                    </Item>
+                  </Grid>
+                  <Grid item>
+                    <Item>
+                    <Tooltip
+                      title="Add additional cellenONE annotation files in .fld format"
+                      TransitionComponent={Zoom}
+                      arrow placement="top">
+                        <Stack direction="row" alignItems= "center" spacing={2}>
+                        <h2 display="inline">Additional cellenONE<br></br>annotation files</h2>
+                          <div>
+                            <form>
+                            <div>
+                            <Button
+                            variant="contained"
+                            style={{"margin-left": "16px"}}
+                            onClick={handleSubmitER}>Add</Button>
+                            </div>
+                            </form>
+                          <List id="extra-cellone-files-list">
+                            {rows.map((row, index) => (
+                              <ListItem
+                              style={{ "font-size": "100%", "margin": "0px", "display": "flex", "justify-content": "space-evenly"}}
+                              key={index}>{row}
+                              <Box sx={{ bgcolor: '#c0cedb', width: "100%", borderRadius: 2, padding: "10px", display: "flex", alignItems: "center" }}>
+                                <Stack direction="column" alignItems= "center" spacing={2}>
+                                <Stack direction="row" alignItems= "center" spacing={2}>
+                                <TextField
+                                  type="text"
+                                  placeholder='Label of file'
+                                  variant="outlined"
+                                  name={"extra-file-" + index + "-label"}
+                                  sx={{ width: '15ch', background: '#f2f2f2', borderRadius: 1 }}/>
+                                <Button
+                                variant="contained"
+                                component="label"
+                                className='import_third_col'
+                                >
+                                  Select File
+                                  <input
+                                    type="file"
+                                    name={"extra-file-" + index}
+                                    hidden
+                                  />
+                                </Button>
+                                </Stack>
+                                <p id={"extra-file-" + index + "-tag"}
+                              className="p_tag_import">No file imported</p>
+                                </Stack>
+                                <Button variant="contained" style={{margin: "16px"}} onClick={() =>handleDeleteER(index)}>Delete</Button>
+                              </Box>
+                              </ListItem>
+                            ))}
+                          </List>
+                        </div>  
+                      </Stack>
+                    </Tooltip>
                     </Item>
                   </Grid>
                   <Grid item>

@@ -12,11 +12,12 @@
 /build
 /out
 /processing/processing.exe
+/processing/scpw.exe
 processingpy/build
 processingpy/dist
 processingpy/processing.spec
+processingpy/scpw.spec
 processing/processing
-processing/processing.py
 globals.js
 globals.json
 

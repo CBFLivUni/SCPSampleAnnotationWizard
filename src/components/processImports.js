@@ -88,6 +88,7 @@ function processMetadataToInclude(formSettings, storagePath, store) {
 	const defaultDisabled = ["RawFileName", "Channel", "CellType"];
 
 	// loop over metaArray and check if needs to be default checked or not
+	console.log(metaArray)
 	for (var i = 0; i < metaArray.length; i++) {
 
 		let disabled;

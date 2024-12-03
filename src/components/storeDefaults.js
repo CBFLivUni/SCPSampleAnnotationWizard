@@ -1,6 +1,7 @@
 // name in json needs to match name of elementId for clarity
 
-export const settingsDefaults = {form:{"raw-files-group": "folder",
+export const settingsDefaults = {form:{"file-format": "raw",
+									"raw-files-group": "folder",
 									"raw-files-path": "undefined",
 									"label-file-path": "undefined",
 									"pickup-file-path": "undefined",
@@ -13,10 +14,15 @@ export const settingsDefaults = {form:{"raw-files-group": "folder",
 									"meta-to-include": "undefined",
 									"column-mismatches": "undefined",
 									"label-missing-data": "Control",
-									"well-regex": "W([^_]*)_",
+									"well-regex": "_W([^_]*)_",
 									"pickup-type": "single",
 									"offset": "38",
-									"tech-type": "tmt"
+									"tech-type": "tmt",
+									"invert-col": "false",
+									"invert-row": "false",
+									"col-regex": "_C([^_]*)_",
+									"row-regex": "_R([^_]*)_",
+									"extra-cellone-files": []
 									},
 								private:{"raw-files-path-tag": "No raw files loaded",
 									"label-file-path-tag": "No labels file loaded",

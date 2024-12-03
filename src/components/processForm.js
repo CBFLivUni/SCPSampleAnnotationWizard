@@ -10,12 +10,21 @@ const outputPath = processAdditionalArgs('outputPath');
 
 function processImportPaths(event, tag, storagePath) {
   // update text in p element with upload name and get real path
+  console.log(tag)
 
+  let pTagValue;
+
+  // if cell file, then just use name of file, not path, as not room
+  if (event.target.name.startsWith("extra-file")) {
+    //pTagValue = event.target.value.replace(/^.*[\\/]/, '')
+    pTagValue = getValuePath(event, storagePath)
+  } else {
+    pTagValue = getValuePath(event, storagePath)
+  }
   let p_tag = document.getElementById(tag)
-  let realPath = getValuePath(event, storagePath)
-  p_tag.innerText = realPath
+  p_tag.innerText = pTagValue
 
-  return realPath
+  return pTagValue
 };
 
 
@@ -29,7 +38,7 @@ function getValuePath(event, storagePath) {
     let settings = jsonfile.readFileSync(storagePath)
 
     // if folder path uploaded, i.e. if output path or raw files folder, then keep only folder, not file
-    if ((event.target.name === "output-path") || (event.target.name === "raw-files-path" && settings.form["raw-files-group"] === "folder")) {
+    if ((event.target.name === "output-path") || (event.target.name === "raw-files-path" && settings.form["raw-files-group"] === "folder" && settings.form["file-format"] === "raw")) {
 
       // if output folder, then just need folder, not file
       let folderPath = event.target.files[0].path
@@ -130,6 +139,8 @@ function processPrivateStore(event, store, path) {  // store
 export const handleChangePF = (event, store, storagePath) => {
     // handle form change input.
     console.log(event)
+    console.log(event.target.name)
+    console.log(event.target.value)
 
     // for checking whether need to check if check import page needs to run
     let pageName = document.URL;
@@ -153,6 +164,10 @@ export const handleChangePF = (event, store, storagePath) => {
       // add p tag changes to private store
       privateVal = formVal;
       privateKey = pTag;
+    
+    } else if (event.target.name === "file-format") {
+      formKey = event.target.name
+      formVal = event.target.value
 
     } else if (event.target.name === "raw-files-group") {
       formKey = event.target.name
@@ -201,6 +216,34 @@ export const handleChangePF = (event, store, storagePath) => {
       p_tag.innerText = stringFiles
       privateVal = stringFiles;
       privateKey = pTag;
+
+    } else if (event.target.name.startsWith("extra-file")) {
+      // if new file uploaded or label of file changed, then update all row name
+
+      // if "select file" button selected, then update p tag
+      if (event.target.name.includes("label") == false) {
+        let pTag = event.target.name + "-tag";
+
+        // add p tag changes to private store
+        privateVal = processImportPaths(event, pTag, storagePath);
+        privateKey = pTag;
+      }
+
+      // bit janky, but get all row labels, file paths and save to form
+      let extraCellForm = document.getElementById("extra-cellone-files-list")
+
+      // loop over li within extraCellForm and add values to array
+      // array of [label, file path]
+      let extraCellFiles = [];
+      let listItems = extraCellForm.getElementsByTagName("li");
+      for (let i = 0; i < listItems.length; i++) {
+        let label = document.getElementsByName("extra-file-" + i + "-label")[0].value;
+        let file = listItems[i].getElementsByTagName("p")[0].innerText;
+        extraCellFiles.push([label, file]);
+      }
+
+      formVal = extraCellFiles;
+      formKey = "extra-cellone-files"
 
     } else if (event.target.name === "name-job") {
       // now that only name a job, add it to "my documents" path
@@ -330,6 +373,14 @@ export const handleChangePF = (event, store, storagePath) => {
       formVal = event.target.value
 
     } else if (event.target.name === "tech-type") {
+      formKey = event.target.name
+      formVal = event.target.value
+
+    } else if (event.target.name === "invert-col") {
+      formKey = event.target.name
+      formVal = event.target.value
+
+    } else if (event.target.name === "invert-row") {
       formKey = event.target.name
       formVal = event.target.value
     }

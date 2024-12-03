@@ -1,15 +1,23 @@
 import os
 import sys
 import time
+import warnings
+# suppress FutureWarnings to keep cli cleaner
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 import pandas as pd
 import string
 import csv
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
+import PyQt5
 import math
 import json
 import logging
 import re
+
+matplotlib.use('Qt5Agg')
 
 """
 run processing of data from UI imports, based on 'CellenONE_ImportSinglePickup_AR.m'
@@ -18,9 +26,8 @@ run processing of data from UI imports, based on 'CellenONE_ImportSinglePickup_A
 # adaption of CellenONE_ImportSinglePickup.m
 # MATLAB file written by Ed Emmott, adapted and translated to Python by Alex Rothwell
 
-# General rules:
-# Nomenclature for SCP files.
-# Userinitials_DateInYMDformat_Expt_Plate_Well_RunNumIn00xFormat_Rep
+# TODO
+# could do with tidying up and breaking into multiples files now that it's grown, challenge to integrate with pyinstaller
 
 try:
 	# get all imports and options from ui
@@ -28,8 +35,6 @@ try:
 
 	# get user_data_path as arg
 	user_data_path = sys.argv[1]
-	#user_data_path = r"..\scpannotation\data.json"
- 	# user_data_path = r"C:\Users\alexr\OneDrive\Documents\Work\CBF\Emmott_Annotation\Application\scpannotation\data.json"
 
 	# either 'processimport', 'full'
 	analysis = sys.argv[2]
@@ -39,6 +44,7 @@ try:
 		user_data = json.load(read_file)
 
 	# define paths
+	file_format = user_data['form']['file-format']
 	rawfile_p_f = user_data['form']['raw-files-group']
 	rawfile_path = user_data['form']['raw-files-path']
 	labels_path = user_data['form']['label-file-path']
@@ -49,14 +55,28 @@ try:
 	well_to_tmt_mapping = user_data['form']['well-to-tmt-mapping']
 	tmt_mapping_path = user_data['form']['tmt-mapping-path']
 	cell_names = user_data['form']['cell-population-names']
-	meta_to_include = user_data['form']['meta-to-include']
+ 
+	# when using CLI, meta data not added because too fiddly, so just include all cols
+	if 'meta-to-include' in user_data['form']:
+		meta_to_include = user_data['form']['meta-to-include']
+	else:
+		meta_to_include = []
+  
 	column_mismatches = user_data['form']['column-mismatches']
 	label_missing = user_data['form']['label-missing-data']
 	well_regex = user_data['form']['well-regex']
 	pickup_type = user_data['form']['pickup-type']
 	offset = user_data['form']['offset']
 	tech = user_data['form']['tech-type']
+	invert_col = user_data['form']['invert-col']
+	invert_row = user_data['form']['invert-row']
+	col_regex = user_data['form']['col-regex']
+	row_regex = user_data['form']['row-regex']
+	extra_cellone_files = user_data['form']['extra-cellone-files']
 
+	# if file-format is "d", then force "raw-files-group" to be "csv"
+	if file_format == "d":
+		rawfile_p_f = "csv"
 
 	# set up logging asap
 	logging.basicConfig(filename= os.path.join(output_path, "scpannotationwizard.log"), level=logging.INFO)
@@ -110,7 +130,7 @@ try:
 		if rawfile_p_f == 'folder':
 
 			for f in os.listdir(rawfile_path):
-				if f.endswith(".raw"):
+				if f.endswith(".raw") or f.endswith(".d"):
 					example_raw_file = f
 					break  # end loop once found a suitable example raw file
 
@@ -136,9 +156,12 @@ try:
 		# preprocess and sanitise inputs
 		# get only column names to include meta_data  
 		cols_to_include = []
-		for col in meta_to_include:
-			if col['checked'] == True:
-				cols_to_include.append(col['name'])
+  
+		if meta_to_include != []:
+		# if meta_to_include is empty, then include all columns
+			for col in meta_to_include:
+				if col['checked'] == True:
+					cols_to_include.append(col['name'])
 
 		if tech == "tmt":
 			if well_to_tmt_mapping == "default":
@@ -190,7 +213,8 @@ try:
 		user_settings = user_data['form']
 
 		# clear out anything don't need
-		del user_settings['meta-to-include']
+		if 'meta-to-include' in user_settings:
+			del user_settings['meta-to-include']
 		user_settings['cols_to_include'] = cols_to_include
 
 		# log params
@@ -199,7 +223,7 @@ try:
 		logging.info("***LOG***")
 
 		# raw files
-		# get file name and msaquisdatetime, either from csv or folders with .raw
+		# get file name and msaquisdatetime, either from csv or folders with .raw or .d
 		# switch for rawfile path or csv with list of rawfiles
 		# 'folder' for path of folder containing raw files or 'csv' for csv with file list
 		# if rawfile path is input, then import from path
@@ -210,7 +234,7 @@ try:
 			creation_times = []
 
 			for f in os.listdir(rawfile_path):
-				if f.endswith(".raw"):
+				if f.endswith(".raw") or f.endswith(".d"):
 					raw_files.append(f)
 					creation_times.append(
 							time.ctime(os.path.getmtime(os.path.join(rawfile_path, f)))
@@ -227,6 +251,70 @@ try:
 				logging.error("Check '" + str(rawfile_path) + "' is valid Raw File Import .csv, see README.xlsx for guidance")
 				sys.exit("Check '" + str(rawfile_path) + "' is valid Raw File Import .csv, see README.xlsx for guidance")
 
+		# invert col and row if needed
+		if invert_col == "true":
+			# get all col numbers from raw files
+			col_numbers = []
+			for raw_file in raw_files_df['RawFileName']:
+				match = re.search(col_regex, raw_file)
+				if match:
+					col_numbers.append(int(match.group(1)))
+
+			# invert column numbers
+			unique_col_numbers = list(set(col_numbers))
+			sort_unique_col_numbers = sorted(unique_col_numbers)
+			reverse_unique_col_numbers = sort_unique_col_numbers[::-1]
+
+			# convert to str so can add leading zero if single digit
+			sort_unique_col_numbers_str = [str(x) if len(str(x)) == 2 else "0" + str(x) for x in sort_unique_col_numbers]
+			reverse_unique_col_numbers_str = [str(x) if len(str(x)) == 2 else "0" + str(x) for x in reverse_unique_col_numbers]
+   
+			inverted_col_dict = dict(zip(sort_unique_col_numbers_str, reverse_unique_col_numbers_str))
+
+			# update raw file names with inverted column numbers
+			new_raw_file_names = []
+			for raw_file in raw_files_df['RawFileName']:
+				# replace using dict and regex
+				to_replace = re.search(col_regex, raw_file).group(1)
+				replace_with = inverted_col_dict[to_replace]
+    
+				new_raw_file_name = re.sub(col_regex, f'_C{replace_with}_', raw_file)
+    
+				new_raw_file_names.append(new_raw_file_name)
+
+			raw_files_df['RawFileName'] = new_raw_file_names
+   
+		if invert_row == "true":
+			# get all row numbers from raw files
+			row_numbers = []
+			for raw_file in raw_files_df['RawFileName']:
+				match = re.search(row_regex, raw_file)
+				if match:
+					row_numbers.append(int(match.group(1)))
+     
+			# invert row numbers
+			unique_row_numbers = list(set(row_numbers))
+			sort_unique_row_numbers = sorted(unique_row_numbers)
+			reverse_unique_row_numbers = sort_unique_row_numbers[::-1]
+   
+			# convert to str so can add leading zero if single digit
+			sort_unique_row_numbers_str = [str(x) if len(str(x)) == 2 else "0" + str(x) for x in sort_unique_row_numbers]
+			reverse_unique_row_numbers_str = [str(x) if len(str(x)) == 2 else "0" + str(x) for x in reverse_unique_row_numbers]
+   
+			inverted_row_dict = dict(zip(sort_unique_row_numbers_str, reverse_unique_row_numbers_str))
+
+			# update raw file names with inverted row numbers
+			new_raw_file_names = []
+			for raw_file in raw_files_df['RawFileName']:
+				# replace using dict and regex
+				to_replace = re.search(row_regex, raw_file).group(1)
+				replace_with = inverted_row_dict[to_replace]
+	
+				new_raw_file_name = re.sub(row_regex, f'_R{replace_with}_', raw_file)
+	
+				new_raw_file_names.append(new_raw_file_name)
+    
+			raw_files_df['RawFileName'] = new_raw_file_names
 
 		# from raw files, naming convention for assigning PickupWell quite confusing, check it makes sense.
 		# col 1 is A, 2 is B, 3 is C etc.
@@ -367,6 +455,95 @@ try:
 
 		cell_files_df = pd.concat(cell_files_list)
 
+		# add additional annotion files
+		if len(extra_cellone_files) != 0:
+      
+			# list of extra df to include
+			extra_dfs = []
+			
+			# format files
+			extra_files_dict = {}
+			for file in extra_cellone_files:
+       
+				if file[0] != "No file imported":
+					extra_files_dict[file[0]] = file[1]
+				else:
+					logging.error(f"Extra file '{file[0]}' not imported")
+					sys.exit(f"Extra file '{file[0]}' not imported")
+     
+			# add columns
+			for f_label, f_path in extra_files_dict.items():
+				if f_path.endswith('.fld'):
+        
+					full_rows = []
+        
+					try:
+						# process in the same way as labels.fld files
+						with open(f_path, encoding="Windows-1252") as extra_file_tsv:
+							rd = csv.reader(extra_file_tsv, delimiter="\t", quotechar='"')
+							for row in rd:
+								# if any elements are empty then don't keep row, or not 3 cols
+								if ('' not in row) and (len(row)==3):
+									full_rows.append(row)
+         
+					except FileNotFoundError as e:
+						logging.error("Check '" + str(f_path) + "' is valid .fld, see README.xlsx for guidance")
+						sys.exit("Check '" + str(f_path) + "' is valid .fld, see README.xlsx for guidance")
+      
+					# to dataframe
+			extra_rows_df = pd.DataFrame(full_rows, columns = ['position', 'well', 'volume'])
+			extra_rows_df['xpos'] = extra_rows_df['position'].map(lambda x: x.split('/')[1])
+			extra_rows_df['ypos'] = extra_rows_df['position'].map(lambda x: x.split('/')[0])
+
+			# 'volume' column is the column that we need to add to the final table
+			# matched to xpos, ypos
+			
+			field = 1
+			field_list = []
+			for idx, row in extra_rows_df.iterrows():
+				if idx == 0:
+					# if first row, then set field to 1
+					field_list.append(field)
+					prev_ypos = int(row['ypos'])
+				
+				else:
+					curr_ypos = int(row['ypos'])
+
+					# if current ypos is less than previous, then onto the next field.
+					if curr_ypos < prev_ypos:
+						field += 1
+
+					field_list.append(field)
+
+					# record what previous ypos will then be
+					prev_ypos = curr_ypos
+
+			extra_rows_df['field'] = field_list
+			extra_rows_df['XY'] = extra_rows_df.apply(lambda x : str(x['field']) + "_" + str(x['xpos']) + "_" + str(x['ypos']), axis=1)
+			# keep onlt volume and XY
+			extra_rows_df = extra_rows_df[['XY', 'volume']]
+
+			# if volume column ends in ',' then remove
+			extra_rows_df['volume'] = extra_rows_df['volume'].map(lambda x: x.rstrip(','))
+   
+			# if f_label is the same as a column name, then add "_cellone" to avoid conflict
+			if f_label in labels_df.columns or f_label in cell_files_df.columns:
+				old_f_label = f_label
+				f_label += "_cellone"
+    
+				# update dict with new column name so that it is added correctly later on
+				extra_files_dict[f_label] = f_path
+				del extra_files_dict[old_f_label]
+
+      		# rename volume to match label      
+			extra_rows_df = extra_rows_df.rename(columns={'volume': f_label})
+   
+			extra_dfs.append(extra_rows_df)
+		
+		else:
+			logging.error("Additional annototation file must be .fld")
+			sys.exit("Additional annototation file must be .fld")
+
 		# handle mismatches
 		for col, val in column_mismatches.items():
 			# if input is to remove, then remove col
@@ -383,6 +560,11 @@ try:
 		# merge labels and cell tables
 		merged_table_df = labels_df.merge(cell_files_df, on='XY', how="outer")
 		merged_table_df = merged_table_df.apply(pd.to_numeric, errors='ignore')
+  
+		# if extra files, then merge them
+		if len(extra_dfs) != 0:
+			for extra_df in extra_dfs:
+				merged_table_df = merged_table_df.merge(extra_df, on='XY', how="outer")
 
 		# fill empties
 		merged_table_df['CellType'] = merged_table_df['CellType'].fillna(label_missing)
@@ -583,10 +765,19 @@ try:
 			final_df = final_df.sort_values(by=['RawFileName'])
 
 		# only keep columns you need
-		final_df = final_df[cols_to_include]
+  		# if cols_to_include is empty, then keep all columns
+		if cols_to_include != []:
+			final_df = final_df[cols_to_include + list(extra_files_dict.keys())]
 
 		# if nan's deal with
 		final_df['RawFileName'] = final_df['RawFileName'].map(lambda x: str(x).split('.raw')[0])
+		final_df['RawFileName'] = final_df['RawFileName'].map(lambda x: str(x).split('.d')[0])
+
+		# make it easier for downstream analysis
+		final_df.rename(columns={"RawFileName": "runCol", "Channel": "quantCols"}, inplace=True)
+		final_df['num'] = final_df['quantCols'].str.extract(r'\.(\d+)$')[0].astype(float)
+		final_df = final_df.sort_values(by=['runCol', 'num'])
+		final_df.drop(columns=['num'], inplace=True)
 
 		# write table
 		try:
