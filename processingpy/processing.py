@@ -782,7 +782,7 @@ try:
 		# write table
 		try:
 			final_df.to_csv(os.path.join(output_path, "scp_sample_annotation_table.csv"), index=False)
-		except PermissionError as e:
+		except (PermissionError, TypeError) as e:
 			logging.error("Ensure that '" + str(os.path.join(output_path, "scp_sample_annotation_table.csv")) + "' is not open")
 			sys.exit(e)
 

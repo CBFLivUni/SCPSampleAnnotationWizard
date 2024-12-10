@@ -5,6 +5,9 @@ import subprocess
 import platform
 
 """
+ # TODO
+ - documentation on how .log file should be formatted, and adding scpw to PATH
+
 input can be
  - .log file of COMPLETED scp output (not if tool partially ran, or failed)
  - or configured file of scp parameters formatted as "key : value" per line
