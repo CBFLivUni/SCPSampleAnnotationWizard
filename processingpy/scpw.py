@@ -4,6 +4,12 @@ import json
 import subprocess
 import platform
 
+"""
+input can be
+ - .log file of COMPLETED scp output (not if tool partially ran, or failed)
+ - or configured file of scp parameters formatted as "key : value" per line
+"""
+
 # if not enough arguments, print usage
 if len(sys.argv) < 2:
 	print("Usage: scpw <arg_file>")
