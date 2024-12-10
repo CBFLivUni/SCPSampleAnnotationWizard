@@ -183,7 +183,7 @@ function ImportPage() {
                   <Item>
                   <Tooltip 
                           TransitionComponent={Zoom}
-                          title="Data file extension"
+                          title="Select the type of data used"
                           arrow placement="top">
                       <Stack direction="row" alignItems= "center" spacing={2}>
                             <h2 className='import_first_col'>Data File Extension</h2>

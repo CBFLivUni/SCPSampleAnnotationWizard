@@ -594,7 +594,7 @@ function OtherPage() {
                     <Item>
                         <Tooltip
                         TransitionComponent={Zoom}
-                        title="Assign a value to TMT labels or ({label free input file name}) that are currently missing cell data"
+                        title="Assign a value to TMT labels or droplets that are currently missing cell data"
                         arrow placement="top">
                       <Stack direction="row" alignItems= "center" spacing={2}>
                           <h2 display="inline">Name missing cell data values</h2>
@@ -642,7 +642,7 @@ function OtherPage() {
                       }}>
                     <Item>
                           <Tooltip
-                          title="Choose the mapping of well to Label file see README for more info"
+                          title="Choose the mapping of well to Label file, see README for more info"
                           TransitionComponent={Zoom}
                           arrow placement="top">
                       <Stack direction="row" alignItems= "center" spacing={2}>
@@ -699,7 +699,7 @@ function OtherPage() {
                     <Item>
                     <Tooltip
                     TransitionComponent={Zoom}
-                    title="Select whether to invert row and column of file names"
+                    title="Select whether the numbering of column or row should be inverted, see README for more info"
                     arrow placement="top">
                       <h2>Invert Numbering</h2>
                       <Box display={hideExampleFile} alignItems="center" justifyContent="center">

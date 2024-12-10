@@ -525,7 +525,7 @@ try:
 
 			# if volume column ends in ',' then remove
 			extra_rows_df['volume'] = extra_rows_df['volume'].map(lambda x: x.rstrip(','))
-   
+
 			# if f_label is the same as a column name, then add "_cellone" to avoid conflict
 			if f_label in labels_df.columns or f_label in cell_files_df.columns:
 				old_f_label = f_label

@@ -20,6 +20,7 @@ processingpy/scpw.spec
 processing/processing
 globals.js
 globals.json
+data.json
 
 # misc
 .DS_Store
